@@ -117,23 +117,23 @@ void Board::Actuators::elevatorSetHeigth(int16_t height) {
 }
 
 void Board::Com::I2CBus::init(){
-    palSetLineMode(I2C_SCL_PIN, I2C_SCL_PIN_MODE);
-    palSetLineMode(I2C_SDA_PIN, I2C_SDA_PIN_MODE);
-    i2cStart(&I2C_DRIVER, &i2cConfig);
+    palSetLineMode(I2C_SERVO_SCL_PIN, I2C_SERVO_SCL_PIN_MODE);
+    palSetLineMode(I2C_SERVO_SDA_PIN, I2C_SERVO_SDA_PIN_MODE);
+    i2cStart(&I2C_SERVO_DRIVER, &i2cConfig);
 
 }
 
 bool Board::Com::I2CBus::transmit(uint8_t addr, uint8_t *txData, uint8_t txLen, uint8_t *rxData, uint8_t rxLen){
-    i2cAcquireBus(&I2C_DRIVER);
-    msg_t ret = i2cMasterTransmitTimeout(&I2C_DRIVER, addr, txData, txLen, rxData, rxLen, TIME_MS2I(10));
-    i2cReleaseBus(&I2C_DRIVER);
+    i2cAcquireBus(&I2C_SERVO_DRIVER);
+    msg_t ret = i2cMasterTransmitTimeout(&I2C_SERVO_DRIVER, addr, txData, txLen, rxData, rxLen, TIME_MS2I(10));
+    i2cReleaseBus(&I2C_SERVO_DRIVER);
     return ret == MSG_OK;
 }
 
 bool Board::Com::I2CBus::receive(uint8_t addr, uint8_t *rxData, uint8_t rxLen){
-    i2cAcquireBus(&I2C_DRIVER);
-    msg_t ret = i2cMasterReceiveTimeout(&I2C_DRIVER, addr, rxData, rxLen, TIME_MS2I(10));
-    i2cReleaseBus(&I2C_DRIVER);
+    i2cAcquireBus(&I2C_SERVO_DRIVER);
+    msg_t ret = i2cMasterReceiveTimeout(&I2C_SERVO_DRIVER, addr, rxData, rxLen, TIME_MS2I(10));
+    i2cReleaseBus(&I2C_SERVO_DRIVER);
 
     return ret == MSG_OK;
 }

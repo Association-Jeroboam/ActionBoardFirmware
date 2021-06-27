@@ -3,7 +3,7 @@
 #include "Adafruit_PWMServoDriver.h"
 #include "Logging.hpp"
 
-static Adafruit_PWMServoDriver driver(0x40, &I2C_DRIVER);
+static Adafruit_PWMServoDriver driver(0x40, &I2C_SERVO_DRIVER);
 
 void Board::Actuators::init() {
     Logging::println("[BoardSpecific] init Actuators");

@@ -34,15 +34,15 @@ CANConfig const canConfig = {
         .RXGFC = 0
 };
 
-#define I2C_DRIVER I2CD2
+#define I2C_SERVO_DRIVER I2CD2
 
-#define I2C_SDA_PIN      PAL_LINE(GPIOF, 0U)
-#define I2C_SDA_PIN_MODE PAL_MODE_ALTERNATE(4)
-#define I2C_SCL_PIN      PAL_LINE(GPIOA, 9U)
-#define I2C_SCL_PIN_MODE PAL_MODE_ALTERNATE(4)
+#define I2C_SERVO_SDA_PIN      PAL_LINE(GPIOF, 0U)
+#define I2C_SERVO_SDA_PIN_MODE PAL_MODE_ALTERNATE(4)
+#define I2C_SERVO_SCL_PIN      PAL_LINE(GPIOB, 7U)
+#define I2C_SERVO_SCL_PIN_MODE PAL_MODE_ALTERNATE(4)
 
 I2CConfig const i2cConfig = {
-        .timingr = 0x10707DBC,
+        .timingr = 0x20A0C4DF,
         .cr1 = 0,
         .cr2 = 0,
 };
