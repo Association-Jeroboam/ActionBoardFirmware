@@ -15,15 +15,18 @@
 CanRxThread canRxThread;
 CanTxThread canTxThread;
 
-static DxlPliers s_pliersFrontFarLeft( PLIERS_FRONT_FAR_LEFT_ID);
-static DxlPliers s_pliersFrontLeft(    PLIERS_FRONT_LEFT_ID);
-static DxlPliers s_pliersFrontRight(   PLIERS_FRONT_RIGHT_ID);
-static DxlPliers s_pliersFrontFarRight(PLIERS_FRONT_FAR_RIGHT_ID);
+static DxlPliers s_pliersFrontFarLeft( PLIERS_FRONT_FAR_LEFT_ID, PLIERS_FRONT_FAR_LEFT_IDLE_ANGLE, PLIERS_FRONT_FAR_LEFT_ACTIVE_ANGLE);
+static DxlPliers s_pliersFrontLeft(    PLIERS_FRONT_LEFT_ID, PLIERS_FRONT_LEFT_IDLE_ANGLE, PLIERS_FRONT_LEFT_ACTIVE_ANGLE);
+static DxlPliers s_pliersFrontRight(   PLIERS_FRONT_RIGHT_ID, PLIERS_FRONT_RIGHT_IDLE_ANGLE, PLIERS_FRONT_RIGHT_ACTIVE_ANGLE);
+static DxlPliers s_pliersFrontFarRight(PLIERS_FRONT_FAR_RIGHT_ID, PLIERS_FRONT_FAR_RIGHT_IDLE_ANGLE, PLIERS_FRONT_FAR_RIGHT_ACTIVE_ANGLE);
 static PwmPliers s_pliersRearFarRight( PLIERS_REAR_FAR_RIGHT_ID, PLIERS_REAR_FAR_RIGHT_PWM_CHANNEL, PLIERS_REAR_FAR_RIGHT_IDLE_ANGLE, PLIERS_REAR_FAR_RIGHT_ACTIVE_ANGLE);
 static PwmPliers s_pliersRearRight(    PLIERS_REAR_RIGHT_ID,     PLIERS_REAR_RIGHT_PWM_CHANNEL,     PLIERS_REAR_RIGHT_IDLE_ANGLE,     PLIERS_REAR_RIGHT_ACTIVE_ANGLE );
 static PwmPliers s_pliersRearMiddle(   PLIERS_REAR_MIDDLE_ID,    PLIERS_REAR_MIDDLE_PWM_CHANNEL,    PLIERS_REAR_MIDDLE_IDLE_ANGLE,    PLIERS_REAR_MIDDLE_ACTIVE_ANGLE);
 static PwmPliers s_pliersRearLeft(     PLIERS_REAR_LEFT_ID,      PLIERS_REAR_LEFT_PWM_CHANNEL,      PLIERS_REAR_LEFT_ANGLE_IDLE,      PLIERS_REAR_LEFT_ACTIVE_ANGLE);
 static PwmPliers s_pliersRearFarLeft(  PLIERS_REAR_FAR_LEFT_ID,  PLIERS_REAR_FAR_LEFT_PWM_CHANNEL,  PLIERS_REAR_FAR_LEFT_IDLE_ANGLE,  PLIERS_REAR_FAR_LEFT_ACTIVE_ANGLE);
+static DxlPliers s_flag(  FLAG_ID, FLAG_IDLE_ANGLE, FLAG_ANGLE);
+static DxlPliers s_rightArm(  ARM_RIGHT_ID, ARM_RIGHT_IDLE_ANGLE, ARM_RIGHT_ACTIVE_ANGLE);
+static DxlPliers s_leftArm(  ARM_LEFT_ID, ARM_LEFT_IDLE_ANGLE, ARM_LEFT_ACTIVE_ANGLE);
 
 static DxlPliers s_pliersBlockLeft(PLIERS_BLOCK_LEFT_ID, PLIERS_BLOCK_LEFT_IDLE_ANGLE, PLIERS_BLOCK_LEFT_ACTIVE_ANGLE);
 static DxlPliers s_pliersBlockRight(PLIERS_BLOCK_RIGHT_ID, PLIERS_BLOCK_RIGHT_IDLE_ANGLE, PLIERS_BLOCK_RIGHT_ACTIVE_ANGLE);
@@ -85,6 +88,10 @@ void Board::Com::DxlServo::init(){
     s_pliersBlockLeft.init();
     s_pliersBlockRight.init();
 
+    s_flag.init();
+    s_rightArm.init();
+    s_leftArm.init();
+
     // init sliders
     s_elevator.init();
     s_elevator.setPIDGains(640, 50, 4000);
@@ -124,9 +131,35 @@ void Board::Actuators::elevatorSetHeigth(int16_t height) {
     s_elevator.goToDistance(height);
 }
 
+Pliers * Board::Actuators::getFlagPliers() {
+    return &s_flag;
+}
+
+void Board::Actuators::activateArm(enum arm arm){
+    switch(arm){
+        case ARM_LEFT:
+            s_leftArm.activate();
+            break;
+        case ARM_RIGHT:
+            s_rightArm.activate();
+            break;
+    }
+}
+
+void Board::Actuators::deactivateArm(enum arm arm){
+    switch(arm){
+        case ARM_LEFT:
+            s_leftArm.deactivate();
+            break;
+        case ARM_RIGHT:
+            s_rightArm.deactivate();
+            break;
+    }
+}
+
 void Board::Com::I2CBus::init(){
-    palSetLineMode(I2C_SERVO_SCL_PIN, I2C_SERVO_SCL_PIN_MODE);
-    palSetLineMode(I2C_SERVO_SDA_PIN, I2C_SERVO_SDA_PIN_MODE);
+//    palSetLineMode(I2C_SERVO_SCL_PIN, I2C_SERVO_SCL_PIN_MODE);
+//    palSetLineMode(I2C_SERVO_SDA_PIN, I2C_SERVO_SDA_PIN_MODE);
     i2cStart(&I2C_SERVO_DRIVER, &i2cConfig);
 
 }
@@ -151,6 +184,7 @@ void Board::IO::init(){
     palSetLineMode(NUCLEO_LED_LINE, PAL_MODE_OUTPUT_PUSHPULL);
 //    palSetLineMode(LED_2_LINE,      PAL_MODE_OUTPUT_PUSHPULL);
 //    palSetLineMode(LED_3_LINE,      PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLineMode(XL320_OLD_DATA_PIN, PAL_MODE_INPUT);
 
     palSetLineMode(MUX_ENABLE_PIN, MUX_ENABLE_PIN_MODE);
     palSetLineMode(MUX_BIT0_PIN, MUX_BIT0_PIN_MODE);
@@ -170,6 +204,7 @@ void Board::IO::init(){
     palSetLineMode(POWER8_PG_PIN, POWER8_PG_PIN_MODE);
     palSetLineMode(POWER8_LDSTR_PIN, POWER8_LDSTR_PIN_MODE);
     palClearLine(POWER8_LDSTR_PIN);
+    chThdSleepMilliseconds(500);
 }
 
 void Board::IO::toggleNucleoLed(){

@@ -6,8 +6,9 @@
 DxlPliers::DxlPliers(uint8_t id, float idleAngle, float activeAngle):Pliers(id, idleAngle, activeAngle){}
 
 void DxlPliers::init(){
-    Logging::println("[DxlPliers] init %d", m_id);
     Dynamixel2Arduino * bus = Board::Com::DxlServo::getBus();
+    Logging::println("[DxlPliers] init %d at %f", m_id, bus->getPresentPosition(m_id, UNIT_DEGREE));
+
     bus->ledOff(m_id);
     bus->torqueOff(m_id);
     chThdSleepMilliseconds(20);

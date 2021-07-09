@@ -36,11 +36,18 @@ namespace Board {
     }
 
     namespace Actuators {
+        enum arm {
+            ARM_LEFT,
+            ARM_RIGHT,
+        };
         void init();
         Pliers* getPliersByID(enum pliersID ID);
         void engagePliersBlock();
         void disengagePliersBlock();
+        void activateArm(enum arm);
+        void deactivateArm(enum arm);
         void elevatorSetHeigth(int16_t height);
         void setPwmServo(uint8_t channel, uint16_t value);
+        Pliers * getFlagPliers();
     }
 }

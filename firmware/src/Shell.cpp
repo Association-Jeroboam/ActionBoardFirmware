@@ -55,9 +55,9 @@ static void cmd_pliers(BaseSequentialStream* chp, int argc, char* argv[]) {
         enum pliersID id = (enum pliersID)atoi(argv[0]);
         enum pliersState state;
         if(!strcmp(argv[1], "open")) {
-            state = PLIERS_OPEN;
+            state = PLIERS_IDLE;
         } else if(!strcmp(argv[1], "close")) {
-            state = PLIERS_CLOSE;
+            state = PLIERS_ACTIVATED;
         } else {
             goto usage;
         }
@@ -138,10 +138,45 @@ static void cmd_slider(BaseSequentialStream* chp, int argc, char* argv[]) {
     Logging::println("slider [elevator/translator] [distance (mm)]");
 }
 
+static void cmd_arm(BaseSequentialStream* chp, int argc, char* argv[]) {
+    (void)chp;
+    (void)chp;
+    if (argc == 2) {
+        uint8_t state = atoi(argv[1]);
+        canFrame_t frame = {
+                .ID = CAN_ARMS_ID,
+                .len = CAN_ARMS_LEN,
+        };
+        if(!strcmp(argv[0], "left")) {
+            frame.data.armData.armID = ARM_LEFT;
+        } else if(!strcmp(argv[0], "right")) {
+            frame.data.armData.armID = ARM_RIGHT;
+        } else {
+            goto usage;
+        }
+        if(state == PLIERS_IDLE) {
+            frame.data.armData.state = PLIERS_IDLE;
+        } else if (state == PLIERS_ACTIVATED){
+            frame.data.armData.state = PLIERS_ACTIVATED;
+        } else {
+            Logging::println("This arm does not exist");
+        }
+        PliersManager::instance()->processFrame(frame);
+    } else {
+        goto usage;
+    }
+    return;
+
+    usage:
+    Logging::println("usage:");
+    Logging::println("arm [left/right] [state]");
+}
+
 static const ShellCommand commands[] = {
     {"pliers", cmd_pliers},
     {"pliers_block", cmd_pliers_block},
     {"slider", cmd_slider},
+    {"arm", cmd_arm},
     {NULL, NULL},
 };
 /*

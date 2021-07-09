@@ -28,20 +28,23 @@ void PliersManager::main() {
         }
     }
     Actuators::disengagePliersBlock();
+    Actuators::deactivateArm(Actuators::ARM_RIGHT);
+    Actuators::deactivateArm(Actuators::ARM_LEFT);
 
     Com::CANBus::registerListener(this);
 
     while (!shouldTerminate()){
         canFrame_t * frame;
         chFifoReceiveObjectTimeout(&m_orderQueue, (void **)&frame, TIME_INFINITE);
+        Logging::println("[PliersManager] recved order");
         switch (frame->ID) {
             case CAN_PLIERS_ID:
                 if( frame->data.pliersData.plierID < PLIERS_MANAGER_MAX_PLIERS_COUNT) {
                     switch (frame->data.pliersData.state) {
-                        case PLIERS_OPEN:
+                        case PLIERS_IDLE:
                             m_pliers[frame->data.pliersData.plierID]->deactivate();
                             break;
-                        case PLIERS_CLOSE:
+                        case PLIERS_ACTIVATED:
                             m_pliers[frame->data.pliersData.plierID]->activate();
                             break;
                     }
@@ -57,10 +60,33 @@ void PliersManager::main() {
                     Actuators::engagePliersBlock();
                 }
                 break;
-            case CAN_ARMS_ID:
+            case CAN_ARMS_ID: {
+                enum Board::Actuators::arm arm;
+                if ( frame->data.armData.armID == ARM_LEFT ){
+                    arm = Actuators::ARM_LEFT;
+                } else if ( frame->data.armData.armID == ARM_RIGHT ){
+                    arm = Actuators::ARM_RIGHT;
+                }
+                if( frame->data.armData.state == PLIERS_IDLE) {
+                    Board::Actuators::deactivateArm(arm);
+                } else if(frame->data.armData.state == PLIERS_ACTIVATED) {
+                    Board::Actuators::activateArm(arm);
+                }
                 break;
+            }
             case CAN_SLIDERS_ID:
                 break;
+            case CAN_FLAG_ID: {
+                uint8_t rise = frame->data.flagData.state;
+                Logging::print("[PliersManager] flag %u", rise);
+                if ( rise ){
+                    Board::Actuators::getFlagPliers()->activate();
+                } else {
+                    Board::Actuators::getFlagPliers()->deactivate();
+                }
+
+                break;
+            }
             default:
                 Logging::println("[PliersManager] Wrong ID received");
         }
