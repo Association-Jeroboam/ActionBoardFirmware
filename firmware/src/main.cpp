@@ -16,14 +16,12 @@ static THD_WORKING_AREA(waShellThread, SHELL_WA_SIZE);
 int main() {
     halInit();
     chSysInit();
-    Board::init();
+
     Logging::init();
     Logging::println("Starting up");
-    Board::Com::CANBus::init();
-    Board::Com::DxlServo::init();
-    Board::Com::I2CBus::init();
-    Board::Actuators::init();
     shellInit();
+    Board::init();
+
 
 
     PliersManager::instance()->start(NORMALPRIO);
@@ -34,9 +32,11 @@ int main() {
 
     uint8_t id = 4;
     while (!chThdShouldTerminateX()) {
-        palToggleLine(LED_LINE);
+        Board::IO::toggleNucleoLed();
         chThdSleepMilliseconds(200);
-        palToggleLine(LED_LINE);
+        Board::IO::toggleLed2();
+        chThdSleepMilliseconds(200);
+        Board::IO::toggleLed3();
         chThdSleepMilliseconds(200);
     }
     Logging::println("Shutting down");

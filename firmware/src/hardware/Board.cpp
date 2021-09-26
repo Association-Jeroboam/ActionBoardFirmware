@@ -35,7 +35,15 @@ Dynamixel2Arduino * dxlBus;
 
 
 void Board::init() {
-    palSetLineMode(LED_LINE, PAL_MODE_OUTPUT_PUSHPULL);
+    Board::IO::init();
+    Board::Com::init();
+    Board::Actuators::init();
+}
+
+void Board::Com::init() {
+    Board::Com::CANBus::init();
+    Board::Com::I2CBus::init();
+    Board::Com::DxlServo::init();
 }
 
 void Board::Com::CANBus::init(){
@@ -136,4 +144,42 @@ bool Board::Com::I2CBus::receive(uint8_t addr, uint8_t *rxData, uint8_t rxLen){
     i2cReleaseBus(&I2C_SERVO_DRIVER);
 
     return ret == MSG_OK;
+}
+
+void Board::IO::init(){
+
+    palSetLineMode(NUCLEO_LED_LINE, PAL_MODE_OUTPUT_PUSHPULL);
+//    palSetLineMode(LED_2_LINE,      PAL_MODE_OUTPUT_PUSHPULL);
+//    palSetLineMode(LED_3_LINE,      PAL_MODE_OUTPUT_PUSHPULL);
+
+    palSetLineMode(MUX_ENABLE_PIN, MUX_ENABLE_PIN_MODE);
+    palSetLineMode(MUX_BIT0_PIN, MUX_BIT0_PIN_MODE);
+    palSetLineMode(MUX_BIT1_PIN, MUX_BIT1_PIN_MODE);
+    palClearLine(MUX_ENABLE_PIN);
+    palClearLine(MUX_BIT0_PIN);
+    palClearLine(MUX_BIT1_PIN);
+
+    palSetLineMode(POWER12_ENABLE_PIN, POWER12_ENABLE_PIN_MODE);
+    palSetLineMode(POWER12_IMON_PIN, POWER12_IMON_PIN_MODE);
+    palSetLineMode(POWER12_LDSTR_PIN, POWER12_LDSTR_PIN_MODE);
+    palSetLineMode(POWER12_PG_PIN, POWER12_PG_PIN_MODE);
+    palClearLine(POWER12_LDSTR_PIN);
+
+    palSetLineMode(POWER8_ENABLE_PIN, POWER8_ENABLE_PIN_MODE);
+    palSetLineMode(POWER8_IMON_PIN, POWER8_IMON_PIN_MODE);
+    palSetLineMode(POWER8_PG_PIN, POWER8_PG_PIN_MODE);
+    palSetLineMode(POWER8_LDSTR_PIN, POWER8_LDSTR_PIN_MODE);
+    palClearLine(POWER8_LDSTR_PIN);
+}
+
+void Board::IO::toggleNucleoLed(){
+    palToggleLine(NUCLEO_LED_LINE);
+}
+
+void Board::IO::toggleLed2(){
+    palToggleLine(LED_2_LINE);
+}
+
+void Board::IO::toggleLed3(){
+    palToggleLine(LED_3_LINE);
 }
