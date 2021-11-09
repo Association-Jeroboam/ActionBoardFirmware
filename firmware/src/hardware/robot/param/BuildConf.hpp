@@ -27,9 +27,11 @@
 #define CAN_RX_PIN_MODE PAL_MODE_ALTERNATE(9)
 
 CANConfig const canConfig = {
+        .NBTP = 0x070C01,
         .DBTP = 0,
         .CCCR = 0,
-        .TEST = 0
+        .TEST = 0,
+        .RXGFC = 0
 };
 
 #define I2C_DRIVER I2CD2
