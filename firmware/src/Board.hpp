@@ -7,7 +7,15 @@
 namespace Board {
     void init();
 
+    namespace IO {
+        void init();
+        void toggleNucleoLed();
+        void toggleLed2();
+        void toggleLed3();
+    }
+
     namespace Com {
+        void init();
         namespace CANBus {
             void init();
             bool send(canFrame_t canData);
@@ -28,11 +36,18 @@ namespace Board {
     }
 
     namespace Actuators {
+        enum arm {
+            ARM_LEFT,
+            ARM_RIGHT,
+        };
         void init();
         Pliers* getPliersByID(enum pliersID ID);
         void engagePliersBlock();
         void disengagePliersBlock();
+        void activateArm(enum arm);
+        void deactivateArm(enum arm);
         void elevatorSetHeigth(int16_t height);
         void setPwmServo(uint8_t channel, uint16_t value);
+        Pliers * getFlagPliers();
     }
 }

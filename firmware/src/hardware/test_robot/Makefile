@@ -113,7 +113,7 @@ include $(CHIBIOS)/os/hal/boards/ST_NUCLEO32_F303K8/board.mk
 include $(CHIBIOS)/os/hal/osal/rt-nil/osal.mk
 # RTOS files (optional).
 include $(CHIBIOS)/os/rt/rt.mk
-include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
+include $(CHIBIOS)/os/common/ports/ARMv7-M/compilers/GCC/mk/port.mk
 # Auto-build files in ./source recursively.
 include $(CHIBIOS)/tools/mk/autobuild.mk
 include $(CHIBIOS)/os/hal/lib/streams/streams.mk
@@ -198,6 +198,11 @@ include $(RULESPATH)/rules.mk
 flash:
 	make -j
 	openocd -s ./cfg/ -c "set BIN_FILE build/${PROJECT}.bin" -f flash.cfg
+
+gdb:
+	gnome-terminal --command "openocd -s ./cfg/ -f gdb.cfg"
+	gdb-multiarch build/${PROJECT}.elf -x ../gdb_script.gdb
+	killall openocd
 #
 # Custom rules
 ##############################################################################
