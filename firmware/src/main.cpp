@@ -31,7 +31,8 @@ int main() {
     uint8_t id = 4;
     while (!chThdShouldTerminateX()) {
         Board::IO::toggleNucleoLed();
-        chThdSleepMilliseconds(2000);
+
+        chThdSleepMilliseconds(1000);
     }
     Logging::println("Shutting down");
 }

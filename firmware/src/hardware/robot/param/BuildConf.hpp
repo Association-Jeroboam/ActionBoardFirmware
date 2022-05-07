@@ -45,7 +45,7 @@ CANConfig const canConfig = {
 
 #define PWM_COUNTING_FREQUENCY 32000000
 #define PWM_MOTOR_OUTPUT_FREQUENCY 20000
-#define PWM_SERVO_FREQUENCY 8000
+#define PWM_SERVO_FREQUENCY 3200000
 #define PWM_SERVO_OUTPUT_FREQUENCY 50
 
 __extension__ const PWMChannelConfig pwmChannelConf{

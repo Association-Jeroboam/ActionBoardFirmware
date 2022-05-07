@@ -40,14 +40,25 @@ namespace Board {
             ARM_LEFT,
             ARM_RIGHT,
         };
+        enum Pump {
+            PUMP_LEFT  = 0,
+            PUMP_RIGHT = 1,
+        };
+        enum Valve {
+            VALVE_LEFT  = 0,
+            VALVE_RIGHT = 1,
+        };
         void init();
         Pliers* getPliersByID(enum pliersID ID);
         void engagePliersBlock();
         void disengagePliersBlock();
         void activateArm(enum arm);
         void deactivateArm(enum arm);
+        void setPumpState(enum Pump, bool enabled);
+        void setValveState(enum Valve, bool opened);
+
         void elevatorSetHeigth(int16_t height);
-//        void setPwmServo(uint8_t channel, uint16_t value);
+        void setPwmServo(uint16_t angle);
         Pliers * getFlagPliers();
     }
 }
