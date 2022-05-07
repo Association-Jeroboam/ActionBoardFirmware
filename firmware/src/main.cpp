@@ -31,8 +31,8 @@ int main() {
     uint8_t id = 4;
     while (!chThdShouldTerminateX()) {
         Board::IO::toggleNucleoLed();
-
-        chThdSleepMilliseconds(1000);
+        Board::IO::getResistanceMeasure();
+        chThdSleepMilliseconds(100);
     }
     Logging::println("Shutting down");
 }

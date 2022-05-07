@@ -121,12 +121,29 @@ __extension__ const PWMConfig pwmServo{
 
 
 // Analog
+__extension__ const ADCConfig resistanceMeasConf = {
+    .difsel = 0,
+};
+void adc_cb(ADCDriver *adcp);
+__extension__ const ADCConversionGroup resistanceMeasConvGroup= {
+    .circular = false,
+    .num_channels = 1,
+    .end_cb = adc_cb,
+    .error_cb = NULL,
+    .cfgr = ADC_CFGR_DISCEN | ADC_CFGR_DISCNUM_VAL(0) ,
+    .cfgr2 = 0,
+    .tr1 = 0,
+    .tr2 = 0,
+    .tr3 = 0,
+    .awd2cr = 0,
+    .awd3cr = 0,
+    .smpr = { 0, 0},
+    .sqr = {ADC_SQR1_SQ1_N(ADC_CHANNEL_IN4), 0, 0, 0},
+};
+
+#define RESISTANCE_MEAS_DRIVER ADCD2
 #define RESISTANCE_MEAS_PIN        PAL_LINE(GPIOA, 7U)
 #define RESISTANCE_MEAS_PIN_MODE   PAL_MODE_INPUT_ANALOG
-
-__extension__ const ADCConfig resistanceMeasConf = {
-
-};
 
 // Power
 #define POWER12_ENABLE_PIN      PAL_LINE(GPIOA, 8U)

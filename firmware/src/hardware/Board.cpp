@@ -201,6 +201,11 @@ void Board::IO::init(){
     palSetLineMode(POWER8_LDSTR_PIN, POWER8_LDSTR_PIN_MODE);
     palClearLine(POWER8_LDSTR_PIN);
     chThdSleepMilliseconds(500);
+
+    palSetLineMode(RESISTANCE_MEAS_PIN, RESISTANCE_MEAS_PIN_MODE);
+    adcStart(&RESISTANCE_MEAS_DRIVER, &resistanceMeasConf);
+
+    Logging::println("ADC driver state %u", RESISTANCE_MEAS_DRIVER.state);
 }
 
 void Board::IO::toggleNucleoLed(){
@@ -213,4 +218,41 @@ void Board::IO::toggleLed2(){
 
 void Board::IO::toggleLed3(){
     palToggleLine(LED_3_LINE);
+}
+uint32_t mean_conv = 0;
+void adc_cb(ADCDriver *adcp) {
+    mean_conv = 0;
+    for(size_t i =0; i < adcp->depth; i++) {
+        mean_conv += adcp->samples[i];
+    }
+    mean_conv /= adcp->depth;
+}
+static const size_t sampleMaxCnt = 1;
+adcsample_t samples[sampleMaxCnt];
+
+constexpr float VDD_VOLTAGE = 3.3;
+constexpr float RES1_MAX_VOLTAGE = 2.6;
+constexpr float RES1_MIN_VOLTAGE = 2.4;
+constexpr float RES2_MAX_VOLTAGE = 0.9;
+constexpr float RES2_MIN_VOLTAGE = 0.7;
+constexpr float RES3_MAX_VOLTAGE = 0.5;
+constexpr float RES3_MIN_VOLTAGE = 0.3;
+
+float Board::IO::getResistanceMeasure() {
+    adcConvert(&RESISTANCE_MEAS_DRIVER, &resistanceMeasConvGroup, samples, sampleMaxCnt);
+
+    float voltage = (float)samples[0]* (1. / 4096.) * VDD_VOLTAGE;
+//    Logging::println("voltage %.4f", voltage);
+    if(voltage < RES1_MAX_VOLTAGE && voltage > RES1_MIN_VOLTAGE) {
+        Logging::println("4k7");
+    }
+
+    if(voltage < RES2_MAX_VOLTAGE && voltage > RES2_MIN_VOLTAGE) {
+        Logging::println("1k");
+    }
+
+    if(voltage < RES3_MAX_VOLTAGE && voltage > RES3_MIN_VOLTAGE) {
+        Logging::println("470R");
+    }
+    return 0.;
 }

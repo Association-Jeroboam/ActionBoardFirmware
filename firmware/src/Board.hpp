@@ -12,6 +12,7 @@ namespace Board {
         void toggleNucleoLed();
         void toggleLed2();
         void toggleLed3();
+        float getResistanceMeasure();
     }
 
     namespace Com {
