@@ -13,15 +13,15 @@ void PwmPliers::init(){
 
 void PwmPliers::activate(){
     Logging::println("[PwmPliers] activate %d", m_channel);
-    Board::Actuators::setPwmServo(m_channel, m_activeAngle);
+//    Board::Actuators::setPwmServo(m_channel, m_activeAngle);
 }
 
 void PwmPliers::deactivate(){
     Logging::println("[PwmPliers] deactivate %d", m_channel);
-    Board::Actuators::setPwmServo(m_channel, m_idleAngle);
+//    Board::Actuators::setPwmServo(m_channel, m_idleAngle);
 }
 
 void PwmPliers::setAngle(int16_t angle){
     Logging::println("[PwmPliers] setAngle %d %d", angle, m_channel);
-    Board::Actuators::setPwmServo(m_channel, angle);
+//    Board::Actuators::setPwmServo(m_channel, angle);
 }

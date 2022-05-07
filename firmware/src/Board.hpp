@@ -47,7 +47,7 @@ namespace Board {
         void activateArm(enum arm);
         void deactivateArm(enum arm);
         void elevatorSetHeigth(int16_t height);
-        void setPwmServo(uint8_t channel, uint16_t value);
+//        void setPwmServo(uint8_t channel, uint16_t value);
         Pliers * getFlagPliers();
     }
 }

@@ -45,7 +45,7 @@ void Board::init() {
 
 void Board::Com::init() {
     Board::Com::CANBus::init();
-    Board::Com::I2CBus::init();
+//    Board::Com::I2CBus::init();
     Board::Com::DxlServo::init();
 }
 
@@ -160,38 +160,33 @@ void Board::Actuators::deactivateArm(enum arm arm){
 void Board::Com::I2CBus::init(){
 //    palSetLineMode(I2C_SERVO_SCL_PIN, I2C_SERVO_SCL_PIN_MODE);
 //    palSetLineMode(I2C_SERVO_SDA_PIN, I2C_SERVO_SDA_PIN_MODE);
-    i2cStart(&I2C_SERVO_DRIVER, &i2cConfig);
+//    i2cStart(&I2C_SERVO_DRIVER, &i2cConfig);
 
 }
 
 bool Board::Com::I2CBus::transmit(uint8_t addr, uint8_t *txData, uint8_t txLen, uint8_t *rxData, uint8_t rxLen){
-    i2cAcquireBus(&I2C_SERVO_DRIVER);
-    msg_t ret = i2cMasterTransmitTimeout(&I2C_SERVO_DRIVER, addr, txData, txLen, rxData, rxLen, TIME_MS2I(10));
-    i2cReleaseBus(&I2C_SERVO_DRIVER);
-    return ret == MSG_OK;
+//    i2cAcquireBus(&I2C_SERVO_DRIVER);
+//    msg_t ret = i2cMasterTransmitTimeout(&I2C_SERVO_DRIVER, addr, txData, txLen, rxData, rxLen, TIME_MS2I(10));
+//    i2cReleaseBus(&I2C_SERVO_DRIVER);
+//    return ret == MSG_OK;
+	return false;
 }
 
 bool Board::Com::I2CBus::receive(uint8_t addr, uint8_t *rxData, uint8_t rxLen){
-    i2cAcquireBus(&I2C_SERVO_DRIVER);
-    msg_t ret = i2cMasterReceiveTimeout(&I2C_SERVO_DRIVER, addr, rxData, rxLen, TIME_MS2I(10));
-    i2cReleaseBus(&I2C_SERVO_DRIVER);
-
-    return ret == MSG_OK;
+//    i2cAcquireBus(&I2C_SERVO_DRIVER);
+//    msg_t ret = i2cMasterReceiveTimeout(&I2C_SERVO_DRIVER, addr, rxData, rxLen, TIME_MS2I(10));
+//    i2cReleaseBus(&I2C_SERVO_DRIVER);
+//
+//    return ret == MSG_OK;
+	return false;
 }
 
 void Board::IO::init(){
 
-    palSetLineMode(NUCLEO_LED_LINE, PAL_MODE_OUTPUT_PUSHPULL);
+//    palSetLineMode(NUCLEO_LED_LINE, PAL_MODE_OUTPUT_PUSHPULL);
 //    palSetLineMode(LED_2_LINE,      PAL_MODE_OUTPUT_PUSHPULL);
 //    palSetLineMode(LED_3_LINE,      PAL_MODE_OUTPUT_PUSHPULL);
     palSetLineMode(XL320_OLD_DATA_PIN, PAL_MODE_INPUT);
-
-    palSetLineMode(MUX_ENABLE_PIN, MUX_ENABLE_PIN_MODE);
-    palSetLineMode(MUX_BIT0_PIN, MUX_BIT0_PIN_MODE);
-    palSetLineMode(MUX_BIT1_PIN, MUX_BIT1_PIN_MODE);
-    palClearLine(MUX_ENABLE_PIN);
-    palClearLine(MUX_BIT0_PIN);
-    palClearLine(MUX_BIT1_PIN);
 
     palSetLineMode(POWER12_ENABLE_PIN, POWER12_ENABLE_PIN_MODE);
     palSetLineMode(POWER12_IMON_PIN, POWER12_IMON_PIN_MODE);
@@ -208,7 +203,7 @@ void Board::IO::init(){
 }
 
 void Board::IO::toggleNucleoLed(){
-    palToggleLine(NUCLEO_LED_LINE);
+//    palToggleLine(NUCLEO_LED_LINE);
 }
 
 void Board::IO::toggleLed2(){

@@ -7,8 +7,8 @@
 #include "BuildConf.hpp"
 #include "Dynamixel2Arduino.h"
 #include "PliersManager.hpp"
-#include "PCA9635.h"
-#include "Adafruit_PWMServoDriver.h"
+//#include "PCA9635.h"
+//#include "Adafruit_PWMServoDriver.h"
 #include "hal_pal.h"
 
 static THD_WORKING_AREA(waShellThread, SHELL_WA_SIZE);
@@ -21,8 +21,6 @@ int main() {
     Logging::println("Starting up");
     shellInit();
     Board::init();
-
-
 
     PliersManager::instance()->start(NORMALPRIO);
     chThdCreateFromHeap(NULL, SHELL_WA_SIZE,
