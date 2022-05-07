@@ -39,8 +39,9 @@ Dynamixel2Arduino * dxlBus;
 
 void Board::init() {
     Board::IO::init();
-    Board::Com::init();
     Board::Actuators::init();
+    Board::Com::init();
+
 }
 
 void Board::Com::init() {
@@ -183,7 +184,7 @@ bool Board::Com::I2CBus::receive(uint8_t addr, uint8_t *rxData, uint8_t rxLen){
 
 void Board::IO::init(){
 
-//    palSetLineMode(NUCLEO_LED_LINE, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLineMode(NUCLEO_LED_LINE, NUCLEO_LED_LINE_MODE);
 //    palSetLineMode(LED_2_LINE,      PAL_MODE_OUTPUT_PUSHPULL);
 //    palSetLineMode(LED_3_LINE,      PAL_MODE_OUTPUT_PUSHPULL);
     palSetLineMode(XL320_OLD_DATA_PIN, PAL_MODE_INPUT);
@@ -203,7 +204,7 @@ void Board::IO::init(){
 }
 
 void Board::IO::toggleNucleoLed(){
-//    palToggleLine(NUCLEO_LED_LINE);
+    palToggleLine(NUCLEO_LED_LINE);
 }
 
 void Board::IO::toggleLed2(){

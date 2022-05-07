@@ -2,6 +2,9 @@
 
 #include  <inttypes.h>
 
+constexpr uint16_t SERVO_MIN_ANGLE = 15;
+constexpr uint16_t SERVO_MAX_ANGLE = 90;
+constexpr uint16_t SERVO_INIT_ANGLE = 40;
 
 #if defined(WHITE_ROBOT)
 constexpr uint8_t PLIERS_FRONT_FAR_LEFT_ID  = 19;

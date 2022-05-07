@@ -31,7 +31,7 @@
 #include "Logging.hpp"
 #include "CanProtocol.hpp"
 #include "PliersManager.hpp"
-
+#include "Board.hpp"
 
 char** endptr;
 
@@ -133,7 +133,7 @@ static void cmd_slider(BaseSequentialStream* chp, int argc, char* argv[]) {
     }
     return;
 
-    usage:
+usage:
     Logging::println("usage:");
     Logging::println("slider [elevator/translator] [distance (mm)]");
 }
@@ -167,9 +167,80 @@ static void cmd_arm(BaseSequentialStream* chp, int argc, char* argv[]) {
     }
     return;
 
-    usage:
+usage:
     Logging::println("usage:");
     Logging::println("arm [left/right] [state]");
+}
+
+static void cmd_pump(BaseSequentialStream* chp, int argc, char* argv[]) {
+    (void)chp;
+    if (argc == 2) {
+        uint8_t state = atoi(argv[1]);
+        Board::Actuators::Pump pump;
+        if(!strcmp(argv[0], "left")) {
+            pump = Board::Actuators::PUMP_LEFT;
+        } else if(!strcmp(argv[0], "right")) {
+            pump = Board::Actuators::PUMP_RIGHT;
+        } else {
+            goto usage;
+        }
+        Board::Actuators::setPumpState(pump, state == 1);
+    } else {
+        goto usage;
+    }
+    return;
+
+usage:
+    Logging::println("usage:");
+    Logging::println("pump [left/right] [0/1]");
+}
+
+static void cmd_valve(BaseSequentialStream* chp, int argc, char* argv[]) {
+    (void)chp;
+    if (argc == 2) {
+        uint8_t state = atoi(argv[1]);
+        Board::Actuators::Valve valve;
+        if(!strcmp(argv[0], "left")) {
+            valve = Board::Actuators::VALVE_LEFT;
+        } else if(!strcmp(argv[0], "right")) {
+            valve = Board::Actuators::VALVE_RIGHT;
+        } else {
+            goto usage;
+        }
+        Board::Actuators::setValveState(valve, state == 1);
+    } else {
+        goto usage;
+    }
+    return;
+
+usage:
+    Logging::println("usage:");
+    Logging::println("valve [left/right] [0/1]");
+}
+
+static void cmd_servo(BaseSequentialStream* chp, int argc, char* argv[]) {
+    (void)chp;
+    if (argc == 1) {
+        uint16_t angle = atoi(argv[0]);
+        if(angle>180) {
+            goto usage;
+        }
+        Board::Actuators::Valve valve;
+        Board::Actuators::setPwmServo(angle);
+    } else {
+        goto usage;
+    }
+    return;
+
+usage:
+    Logging::println("usage:");
+    Logging::println("servo [0-180]");
+}
+
+static void cmd_reboot(BaseSequentialStream* chp, int argc, char* argv[]) {
+    if (argc == 0) {
+        NVIC_SystemReset();
+    }
 }
 
 static const ShellCommand commands[] = {
@@ -177,6 +248,10 @@ static const ShellCommand commands[] = {
     {"pliers_block", cmd_pliers_block},
     {"slider", cmd_slider},
     {"arm", cmd_arm},
+    {"pump", cmd_pump},
+    {"valve", cmd_valve},
+    {"servo", cmd_servo},
+    {"reboot", cmd_reboot},
     {NULL, NULL},
 };
 /*
