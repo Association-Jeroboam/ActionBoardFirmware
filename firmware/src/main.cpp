@@ -22,10 +22,9 @@ int main() {
     shellInit();
     Board::init();
 
-    PliersManager::instance()->start(NORMALPRIO);
-    chThdCreateFromHeap(NULL, SHELL_WA_SIZE,
-                        "shell", NORMALPRIO + 1,
-                        shellThread, (void*)&shell_cfg);
+//    PliersManager::instance()->start(NORMALPRIO);
+    chThdCreateStatic(waShellThread, sizeof(waShellThread), NORMALPRIO,
+                      shellThread, (void*)&shell_cfg);
     chThdSleepMilliseconds(20);
 
     uint8_t id = 4;

@@ -100,6 +100,7 @@ DEPDIR    := ./.dep
 COMMONDIR := $(ROOTDIR)/common
 FIRMWAREDIR := $(ROOTDIR)/firmware
 SOURCEDIR   := $(FIRMWAREDIR)/src
+LIBDIR    := $(FIRMWAREDIR)/libs
 PARAMDIR  := ./param
 
 # Licensing files.

@@ -11,9 +11,20 @@
 #include "Slider.hpp"
 #include "Pliers.hpp"
 #include "PwmPliers.hpp"
+#include "canard.h"
+#include "CanProtocol.hpp"
 
-CanRxThread canRxThread;
-CanTxThread canTxThread;
+inline void* canardSpecificHeapAlloc(CanardInstance* ins, size_t amount) {
+    return chHeapAlloc(NULL, amount);
+}
+
+inline void canardSpecificHeapFree(CanardInstance* ins, void* pointer) {
+    if(pointer) chHeapFree(pointer);
+}
+
+CanardInstance canardInstance;
+CanRxThread canRxThread(&canardInstance);
+CanTxThread canTxThread(&canardInstance);
 
 static DxlPliers s_pliersFrontFarLeft( PLIERS_FRONT_FAR_LEFT_ID, PLIERS_FRONT_FAR_LEFT_IDLE_ANGLE, PLIERS_FRONT_FAR_LEFT_ACTIVE_ANGLE);
 static DxlPliers s_pliersFrontLeft(    PLIERS_FRONT_LEFT_ID, PLIERS_FRONT_LEFT_IDLE_ANGLE, PLIERS_FRONT_LEFT_ACTIVE_ANGLE);
@@ -54,18 +65,25 @@ void Board::Com::CANBus::init(){
     palSetLineMode(CAN_TX_PIN, CAN_TX_PIN_MODE);
     palSetLineMode(CAN_RX_PIN, CAN_RX_PIN_MODE);
     canStart(&CAN_DRIVER, &canConfig);
+    canardInstance = canardInit(canardSpecificHeapAlloc, canardSpecificHeapFree);
+    canardInstance.node_id = ACTION_BOARD_ID;
     canTxThread.start(NORMALPRIO);
     canRxThread.start(NORMALPRIO+1);
     // let Threads finish initialization
     chThdYield();
 }
 
-bool Board::Com::CANBus::send(canFrame_t canData){
-    return canTxThread.send(canData);
+bool Board::Com::CANBus::send(const CanardTransferMetadata* const metadata,
+                              const size_t                        payload_size,
+                              const void* const                   payload) {
+    return canTxThread.send(metadata, payload_size, payload);
 }
 
-void Board::Com::CANBus::registerListener(CanListener *listener) {
-    canRxThread.registerListener(listener);
+void Board::Com::CANBus::registerCanMsg(CanListener *listener,
+                                        CanardTransferKind transfer_kind,
+                                        CanardPortID port_id,
+                                        size_t extent) {
+    canRxThread.subscribe(listener, transfer_kind, port_id, extent);
 }
 
 void Board::Com::DxlServo::init(){
