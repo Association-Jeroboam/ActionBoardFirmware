@@ -30,6 +30,8 @@ namespace Board {
 
         namespace DxlServo {
             void init();
+            void lockBus();
+            void unlockBus();
             Dynamixel2Arduino * getBus();
 
         }

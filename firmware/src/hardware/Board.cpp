@@ -14,6 +14,8 @@
 #include "canard.h"
 #include "CanProtocol.hpp"
 
+chibios_rt::Mutex dxlBusMutex;
+
 inline void* canardSpecificHeapAlloc(CanardInstance* ins, size_t amount) {
     return chHeapAlloc(NULL, amount);
 }
@@ -103,18 +105,14 @@ void Board::Com::DxlServo::init(){
     s_pliersRearLeft.init();
     s_pliersRearFarLeft.init();
 
-    //init pliers block
-    s_pliersBlockLeft.init();
-    s_pliersBlockRight.init();
+}
 
-    s_flag.init();
-    s_rightArm.init();
-    s_leftArm.init();
+void Board::Com::DxlServo::lockBus(){
+    dxlBusMutex.lock();
+}
 
-    // init sliders
-    s_elevator.init();
-    s_elevator.setPIDGains(640, 50, 4000);
-
+void Board::Com::DxlServo::unlockBus(){
+    dxlBusMutex.unlock();
 }
 
 Dynamixel2Arduino * Board::Com::DxlServo::getBus(){
