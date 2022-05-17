@@ -6,11 +6,16 @@
 
 
 constexpr uint16_t PLIERS_MANAGER_WA = 0x300;
-//constexpr uint16_t ORDER_DATA_SIZE = sizeof(canFrame_t);
-//constexpr uint16_t ORDER_QUEUE_LEN = 10;
-constexpr uint8_t  PLIERS_MANAGER_MAX_PLIERS_COUNT = 9;
+constexpr uint8_t  PLIERS_MANAGER_MAX_PLIERS_COUNT = 16;
+
+enum PlersManagerEventFlags {
+    ServoUpdated  = 1 << 0,
+    SliderUpdated = 1 << 0,
+
+};
 
 class PliersManager : public chibios_rt::BaseStaticThread<PLIERS_MANAGER_WA>,
+                      public chibios_rt::EventSource,
                       public CanListener {
 public:
     static PliersManager * instance();
@@ -19,11 +24,16 @@ public:
 
 private:
     PliersManager();
+    chibios_rt::EventListener m_selflistener;
     void main() override;
-//    objects_fifo_t m_orderQueue;
-//    canFrame_t     m_orderBuffer[ORDER_QUEUE_LEN];
-//    msg_t          m_msgBuffer[ORDER_QUEUE_LEN];
-    Pliers *       m_pliers[PLIERS_MANAGER_MAX_PLIERS_COUNT];
+    void processServoAngle(CanardRxTransfer* transfer);
+    void processServoConfig(CanardRxTransfer* transfer);
+    void processServoColor(CanardRxTransfer* transfer);
+    void processSliderPosition(CanardRxTransfer* transfer);
+    void processSliderConfig(CanardRxTransfer* transfer);
+    void processPumpStatus(CanardRxTransfer* transfer);
+    void processValveStatus(CanardRxTransfer* transfer);
+    Servo * m_servo[PLIERS_MANAGER_MAX_PLIERS_COUNT];
 
     static PliersManager s_instance;
 

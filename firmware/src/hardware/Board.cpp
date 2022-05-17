@@ -28,23 +28,23 @@ CanardInstance canardInstance;
 CanRxThread canRxThread(&canardInstance);
 CanTxThread canTxThread(&canardInstance);
 
-static DxlPliers s_pliersFrontFarLeft( PLIERS_FRONT_FAR_LEFT_ID, PLIERS_FRONT_FAR_LEFT_IDLE_ANGLE, PLIERS_FRONT_FAR_LEFT_ACTIVE_ANGLE);
-static DxlPliers s_pliersFrontLeft(    PLIERS_FRONT_LEFT_ID, PLIERS_FRONT_LEFT_IDLE_ANGLE, PLIERS_FRONT_LEFT_ACTIVE_ANGLE);
-static DxlPliers s_pliersFrontRight(   PLIERS_FRONT_RIGHT_ID, PLIERS_FRONT_RIGHT_IDLE_ANGLE, PLIERS_FRONT_RIGHT_ACTIVE_ANGLE);
-static DxlPliers s_pliersFrontFarRight(PLIERS_FRONT_FAR_RIGHT_ID, PLIERS_FRONT_FAR_RIGHT_IDLE_ANGLE, PLIERS_FRONT_FAR_RIGHT_ACTIVE_ANGLE);
-static PwmPliers s_pliersRearFarRight( PLIERS_REAR_FAR_RIGHT_ID, PLIERS_REAR_FAR_RIGHT_PWM_CHANNEL, PLIERS_REAR_FAR_RIGHT_IDLE_ANGLE, PLIERS_REAR_FAR_RIGHT_ACTIVE_ANGLE);
-static PwmPliers s_pliersRearRight(    PLIERS_REAR_RIGHT_ID,     PLIERS_REAR_RIGHT_PWM_CHANNEL,     PLIERS_REAR_RIGHT_IDLE_ANGLE,     PLIERS_REAR_RIGHT_ACTIVE_ANGLE );
-static PwmPliers s_pliersRearMiddle(   PLIERS_REAR_MIDDLE_ID,    PLIERS_REAR_MIDDLE_PWM_CHANNEL,    PLIERS_REAR_MIDDLE_IDLE_ANGLE,    PLIERS_REAR_MIDDLE_ACTIVE_ANGLE);
-static PwmPliers s_pliersRearLeft(     PLIERS_REAR_LEFT_ID,      PLIERS_REAR_LEFT_PWM_CHANNEL,      PLIERS_REAR_LEFT_ANGLE_IDLE,      PLIERS_REAR_LEFT_ACTIVE_ANGLE);
-static PwmPliers s_pliersRearFarLeft(  PLIERS_REAR_FAR_LEFT_ID,  PLIERS_REAR_FAR_LEFT_PWM_CHANNEL,  PLIERS_REAR_FAR_LEFT_IDLE_ANGLE,  PLIERS_REAR_FAR_LEFT_ACTIVE_ANGLE);
-static DxlPliers s_flag(  FLAG_ID, FLAG_IDLE_ANGLE, FLAG_ANGLE);
-static DxlPliers s_rightArm(  ARM_RIGHT_ID, ARM_RIGHT_IDLE_ANGLE, ARM_RIGHT_ACTIVE_ANGLE);
-static DxlPliers s_leftArm(  ARM_LEFT_ID, ARM_LEFT_IDLE_ANGLE, ARM_LEFT_ACTIVE_ANGLE);
+static DxlPliers s_armLeftA(SERVO_ARM_LEFT_A_ID,   SERVO_ARM_LEFT_A_IDLE_ANGLE, SERVO_ARM_LEFT_A_IDLE_ANGLE + 10); //TODO change active angle
+static DxlPliers s_armLeftB(SERVO_ARM_LEFT_B_ID,   SERVO_ARM_LEFT_B_IDLE_ANGLE, SERVO_ARM_LEFT_B_IDLE_ANGLE + 10); //TODO change active angle
+static DxlPliers s_armLeftC(SERVO_ARM_LEFT_C_ID,   SERVO_ARM_LEFT_C_IDLE_ANGLE, SERVO_ARM_LEFT_C_IDLE_ANGLE + 10); //TODO change active angle
+static DxlPliers s_armLeftD(SERVO_ARM_LEFT_D_ID,   SERVO_ARM_LEFT_D_IDLE_ANGLE, SERVO_ARM_LEFT_D_IDLE_ANGLE + 10); //TODO change active angle
+static DxlPliers s_armLeftE(SERVO_ARM_LEFT_E_ID,   SERVO_ARM_LEFT_E_IDLE_ANGLE, SERVO_ARM_LEFT_E_IDLE_ANGLE + 10); //TODO change active angle
+static DxlPliers s_armRightA(SERVO_ARM_RIGHT_A_ID, SERVO_ARM_RIGHT_A_IDLE_ANGLE, SERVO_ARM_RIGHT_A_IDLE_ANGLE + 10); //TODO change active angle
+static DxlPliers s_armRightB(SERVO_ARM_RIGHT_B_ID, SERVO_ARM_RIGHT_B_IDLE_ANGLE, SERVO_ARM_RIGHT_B_IDLE_ANGLE + 10); //TODO change active angle
+static DxlPliers s_armRightC(SERVO_ARM_RIGHT_C_ID, SERVO_ARM_RIGHT_C_IDLE_ANGLE, SERVO_ARM_RIGHT_C_IDLE_ANGLE + 10); //TODO change active angle
+static DxlPliers s_armRightD(SERVO_ARM_RIGHT_D_ID, SERVO_ARM_RIGHT_D_IDLE_ANGLE, SERVO_ARM_RIGHT_D_IDLE_ANGLE + 10); //TODO change active angle
+static DxlPliers s_armRightE(SERVO_ARM_RIGHT_E_ID, SERVO_ARM_RIGHT_E_IDLE_ANGLE, SERVO_ARM_RIGHT_E_IDLE_ANGLE + 10); //TODO change active angle
+static DxlPliers s_rakeLeftTop(SERVO_RAKE_LEFT_TOP_ID, SERVO_RAKE_LEFT_TOP_IDLE_ANGLE, SERVO_RAKE_LEFT_TOP_IDLE_ANGLE + 10); //TODO change active angle
+static DxlPliers s_rakeLeftBottom(SERVO_RAKE_LEFT_BOTTOM_ID, SERVO_RAKE_LEFT_BOTTOM_IDLE_ANGLE, SERVO_RAKE_LEFT_BOTTOM_IDLE_ANGLE + 10); //TODO change active angle
+static DxlPliers s_rakeRightTop(SERVO_RAKE_RIGHT_TOP_ID, SERVO_RAKE_RIGHT_TOP_IDLE_ANGLE, SERVO_RAKE_RIGHT_TOP_IDLE_ANGLE + 10); //TODO change active angle
+static DxlPliers s_rakeRightBottom(SERVO_RAKE_RIGHT_BOTTOM_ID, SERVO_RAKE_RIGHT_BOTTOM_IDLE_ANGLE, SERVO_RAKE_RIGHT_BOTTOM_IDLE_ANGLE + 10); //TODO change active angle
 
-static DxlPliers s_pliersBlockLeft(PLIERS_BLOCK_LEFT_ID, PLIERS_BLOCK_LEFT_IDLE_ANGLE, PLIERS_BLOCK_LEFT_ACTIVE_ANGLE);
-static DxlPliers s_pliersBlockRight(PLIERS_BLOCK_RIGHT_ID, PLIERS_BLOCK_RIGHT_IDLE_ANGLE, PLIERS_BLOCK_RIGHT_ACTIVE_ANGLE);
-
-static Slider s_elevator(SLIDER_ELEVATOR_ID);
+static Slider s_leftSlider(LEFT_SLIDER_ID);
+static Slider s_rightSlider(RIGHT_SLIDER_ID);
 
 constexpr uint32_t DXL_BAUDRATE = 1000000;
 Dynamixel2Arduino * dxlBus;
@@ -94,16 +94,22 @@ void Board::Com::DxlServo::init(){
     dxlBus->begin(DXL_BAUDRATE);
     dxlBus->setPortProtocolVersion(2.0);
 
-    //init pliers
-    s_pliersFrontFarLeft.init();
-    s_pliersFrontLeft.init();
-    s_pliersFrontRight.init();
-    s_pliersFrontFarRight.init();
-    s_pliersRearFarRight.init();
-    s_pliersRearRight.init();
-    s_pliersRearMiddle.init();
-    s_pliersRearLeft.init();
-    s_pliersRearFarLeft.init();
+    s_armLeftA.init();
+    s_armLeftB.init();
+    s_armLeftC.init();
+    s_armLeftD.init();
+    s_armLeftE.init();
+    s_armRightA.init();
+    s_armRightB.init();
+    s_armRightC.init();
+    s_armRightD.init();
+    s_armRightE.init();
+    s_rakeLeftTop.init();
+    s_rakeLeftBottom.init();
+    s_rakeRightTop.init();
+    s_rakeRightBottom.init();
+    s_leftSlider.init();
+    s_rightSlider.init();
 
 }
 
@@ -119,59 +125,31 @@ Dynamixel2Arduino * Board::Com::DxlServo::getBus(){
     return dxlBus;
 }
 
-Pliers*  Board::Actuators::getPliersByID(enum pliersID ID){
+Servo*  Board::Actuators::getServoByID(enum servoID ID){
 
     switch (ID) {
-        case PLIERS_FRONT_FAR_LEFT: return &s_pliersFrontFarLeft;
-        case PLIERS_FRONT_LEFT: return &s_pliersFrontLeft;
-        case PLIERS_FRONT_RIGHT: return &s_pliersFrontRight;
-        case PLIERS_FRONT_FAR_RIGHT: return &s_pliersFrontFarRight;
-        case PLIERS_REAR_FAR_RIGHT: return &s_pliersRearFarRight;
-        case PLIERS_REAR_RIGHT: return &s_pliersRearRight;
-        case PLIERS_REAR_MIDDLE: return &s_pliersRearMiddle;
-        case PLIERS_REAR_LEFT: return &s_pliersRearLeft;
-        case PLIERS_REAR_FAR_LEFT: return &s_pliersRearFarLeft;
+        case SERVO_ARM_LEFT_A: return &s_armLeftA;
+        case SERVO_ARM_LEFT_B: return &s_armLeftB;
+        case SERVO_ARM_LEFT_C: return &s_armLeftC;
+        case SERVO_ARM_LEFT_D: return &s_armLeftD;
+        case SERVO_ARM_LEFT_E: return &s_armLeftE;
+        case SERVO_ARM_RIGHT_A: return &s_armRightA;
+        case SERVO_ARM_RIGHT_B: return &s_armRightB;
+        case SERVO_ARM_RIGHT_C: return &s_armRightC;
+        case SERVO_ARM_RIGHT_D: return &s_armRightD;
+        case SERVO_ARM_RIGHT_E: return &s_armRightE;
+        case SERVO_RAKE_LEFT_TOP: return &s_rakeLeftTop;
+        case SERVO_RAKE_LEFT_BOTTOM: return &s_rakeLeftBottom;
+        case SERVO_RAKE_RIGHT_TOP: return &s_rakeRightTop;
+        case SERVO_RAKE_RIGHT_BOTTOM: return &s_rakeRightBottom;
+        case LEFT_SLIDER: return &s_leftSlider;
+        case RIGHT_SLIDER: return &s_rightSlider;
     }
     return nullptr;
 }
-void Board::Actuators::engagePliersBlock() {
-    s_pliersBlockLeft.activate();
-    s_pliersBlockRight.activate();
-}
-
-void Board::Actuators::disengagePliersBlock() {
-    s_pliersBlockLeft.deactivate();
-    s_pliersBlockRight.deactivate();
-}
 
 void Board::Actuators::elevatorSetHeigth(int16_t height) {
-    s_elevator.goToDistance(height);
-}
-
-Pliers * Board::Actuators::getFlagPliers() {
-    return &s_flag;
-}
-
-void Board::Actuators::activateArm(enum arm arm){
-    switch(arm){
-        case ARM_LEFT:
-            s_leftArm.activate();
-            break;
-        case ARM_RIGHT:
-            s_rightArm.activate();
-            break;
-    }
-}
-
-void Board::Actuators::deactivateArm(enum arm arm){
-    switch(arm){
-        case ARM_LEFT:
-            s_leftArm.deactivate();
-            break;
-        case ARM_RIGHT:
-            s_rightArm.deactivate();
-            break;
-    }
+//    s_elevator.goToDistance(height);
 }
 
 void Board::Com::I2CBus::init(){

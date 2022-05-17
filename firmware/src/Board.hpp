@@ -57,7 +57,7 @@ namespace Board {
             VALVE_RIGHT = 1,
         };
         void init();
-        Pliers* getPliersByID(enum pliersID ID);
+        Servo* getServoByID(enum servoID ID);
         void engagePliersBlock();
         void disengagePliersBlock();
         void activateArm(enum arm);

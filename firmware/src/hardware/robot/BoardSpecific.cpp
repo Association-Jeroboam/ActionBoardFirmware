@@ -20,7 +20,7 @@ void Board::Actuators::init() {
 	pwmStart(&PUMPS_DRIVER,   &pwmPumps);
 	pwmStart(&VALVES_DRIVER,  &pwmValves);
 	pwmStart(&SERVO_0_DRIVER, &pwmServo);
-    setPwmServo(SERVO_INIT_ANGLE);
+    setPwmServo(PWM_PLIERS_INIT_ANGLE);
 }
 
 void Board::Actuators::setPumpState(enum Pump pump, bool enabled) {
@@ -51,7 +51,7 @@ void setDutyCycle(PWMDriver * pwmd, uint16_t channel, float duty_cycle) {
 }
 
 void Board::Actuators::setPwmServo(uint16_t angle) {
-    if(angle > SERVO_MAX_ANGLE || angle < SERVO_MIN_ANGLE) return;
+    if( angle > PWM_PLIERS_MAX_ANGLE || angle < PWM_PLIERS_MIN_ANGLE) return;
     float fangle = (float)angle;
     float dc = fangle * (PWM_SERVO_MAX_DC - PWM_SERVO_MIN_DC) / 180. + PWM_SERVO_MIN_DC;
     setDutyCycle(&SERVO_0_DRIVER, 0, dc);

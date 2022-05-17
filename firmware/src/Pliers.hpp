@@ -2,17 +2,6 @@
 #include "Servo.hpp"
 #include "Dynamixel2Arduino.h"
 
-enum pliersID {
-    PLIERS_FRONT_FAR_LEFT,
-    PLIERS_FRONT_LEFT,
-    PLIERS_FRONT_RIGHT,
-    PLIERS_FRONT_FAR_RIGHT,
-    PLIERS_REAR_FAR_RIGHT,
-    PLIERS_REAR_RIGHT,
-    PLIERS_REAR_MIDDLE,
-    PLIERS_REAR_LEFT,
-    PLIERS_REAR_FAR_LEFT,
-};
 
 enum pliersState {
     PLIERS_IDLE,

@@ -1,7 +1,18 @@
+#include "ch.hpp"
 #include "Board.hpp"
 #include "Logging.hpp"
 #include "PliersManager.hpp"
 #include <new>
+#include "ServoAngle_0_1.h"
+#include "ServoConfig_0_1.h"
+#include "SliderPosition_0_1.h"
+#include "SliderConfig_0_1.h"
+#include "PumpStatus_0_1.h"
+#include "ValveStatus_0_1.h"
+
+enum PliersManagerEvents {
+    SelfEvent      = 1 << 0,
+};
 
 using namespace Board;
 
@@ -11,104 +22,156 @@ PliersManager* PliersManager::instance() {
     return &s_instance;
 }
 
-PliersManager::PliersManager() {
-//    chFifoObjectInit(&m_orderQueue, ORDER_DATA_SIZE, ORDER_QUEUE_LEN,  m_orderBuffer, m_msgBuffer);
+PliersManager::PliersManager():
+BaseStaticThread<PLIERS_MANAGER_WA>(),
+chibios_rt::EventSource(),
+CanListener(){
 }
 
 void PliersManager::main() {
     setName("Pliers Manager");
 
     for(uint8_t id = 0; id < PLIERS_MANAGER_MAX_PLIERS_COUNT; id++) {
-        m_pliers[id] = Actuators::getPliersByID((enum pliersID)id);
-        if(m_pliers[id]) {
-
-            m_pliers[id]->deactivate();
-        } else {
-            Logging::println("[Pliers Manager] Pliers %d Not found!", id);
-        }
+        m_servo[id] = Actuators::getServoByID((enum servoID) id);
     }
-    Actuators::disengagePliersBlock();
-    Actuators::deactivateArm(Actuators::ARM_RIGHT);
-    Actuators::deactivateArm(Actuators::ARM_LEFT);
 
-//    Com::CANBus::registerListener(this);
+    this->registerMask(&m_selflistener, SelfEvent);
+
+    Com::CANBus::registerCanMsg(this,
+                                CanardTransferKindMessage,
+                                ACTION_SERVO_SET_ANGLE_ID,
+                                jeroboam_datatypes_actuators_servo_ServoAngle_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
+    Com::CANBus::registerCanMsg(this,
+                                CanardTransferKindMessage,
+                                ACTION_SERVO_SET_CONFIG_ID,
+                                jeroboam_datatypes_actuators_servo_ServoConfig_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
+    //TODO
+//    Com::CANBus::registerCanMsg(this,
+//                                CanardTransferKindMessage,
+//                                ACTION_SERVO_SET_COLOR_ID,
+//                                );
+    Com::CANBus::registerCanMsg(this,
+                                CanardTransferKindMessage,
+                                ACTION_SLIDER_SET_POSITION_ID,
+                                jeroboam_datatypes_actuators_servo_SliderPosition_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
+    Com::CANBus::registerCanMsg(this,
+                                CanardTransferKindMessage,
+                                ACTION_SLIDER_SET_CONFIG_ID,
+                                jeroboam_datatypes_actuators_servo_SliderConfig_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
+    Com::CANBus::registerCanMsg(this,
+                                CanardTransferKindMessage,
+                                ACTION_PUMP_SET_STATUS_ID,
+                                jeroboam_datatypes_actuators_pneumatics_PumpStatus_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
+    Com::CANBus::registerCanMsg(this,
+                                CanardTransferKindMessage,
+                                ACTION_VALVE_SET_STATUS_ID,
+                                jeroboam_datatypes_actuators_pneumatics_ValveStatus_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
 
     while (!shouldTerminate()){
-//        canFrame_t * frame;
-//        chFifoReceiveObjectTimeout(&m_orderQueue, (void **)&frame, TIME_INFINITE);
-//        Logging::println("[PliersManager] recved order");
-//        switch (frame->ID) {
-//            case CAN_PLIERS_ID:
-//                if( frame->data.pliersData.plierID < PLIERS_MANAGER_MAX_PLIERS_COUNT) {
-//                    switch (frame->data.pliersData.state) {
-//                        case PLIERS_IDLE:
-//                            m_pliers[frame->data.pliersData.plierID]->deactivate();
-//                            break;
-//                        case PLIERS_ACTIVATED:
-//                            m_pliers[frame->data.pliersData.plierID]->activate();
-//                            break;
-//                    }
-//
-//                } else {
-//                    Logging::println("[PliersManager] received order for unknown pliers");
-//                }
-//                break;
-//            case CAN_PLIERS_BLOCK_ID:
-//                if(frame->data.pliersBlockData.state == 0){
-//                    Actuators::disengagePliersBlock();
-//                } else {
-//                    Actuators::engagePliersBlock();
-//                }
-//                break;
-//            case CAN_ARMS_ID: {
-//                enum Board::Actuators::arm arm;
-//                if ( frame->data.armData.armID == ARM_LEFT ){
-//                    arm = Actuators::ARM_LEFT;
-//                } else if ( frame->data.armData.armID == ARM_RIGHT ){
-//                    arm = Actuators::ARM_RIGHT;
-//                }
-//                if( frame->data.armData.state == PLIERS_IDLE) {
-//                    Board::Actuators::deactivateArm(arm);
-//                } else if(frame->data.armData.state == PLIERS_ACTIVATED) {
-//                    Board::Actuators::activateArm(arm);
-//                }
-//                break;
-//            }
-//            case CAN_SLIDERS_ID:
-//                break;
-//            case CAN_FLAG_ID: {
-//                uint8_t rise = frame->data.flagData.state;
-//                Logging::print("[PliersManager] flag %u", rise);
-//                if ( rise ){
-//                    Board::Actuators::getFlagPliers()->activate();
-//                } else {
-//                    Board::Actuators::getFlagPliers()->deactivate();
-//                }
-//
-//                break;
-//            }
-//            default:
-//                Logging::println("[PliersManager] Wrong ID received");
-//        }
+        eventmask_t event = waitOneEvent(SelfEvent);
 
-
-
-//        chFifoReturnObject(&m_orderQueue, frame);
+        if(event & SelfEvent) {
+            eventflags_t flags = m_selflistener.getAndClearFlags();
+            if(flags & ServoUpdated) {
+                for (uint8_t i = 0; i < PLIERS_MANAGER_MAX_PLIERS_COUNT; i++) {
+                    if(m_servo[i]) {
+                        if (m_servo[i]->shouldUpdate() ){
+                            m_servo[i]->update();
+                        }
+                        if (m_servo[i]->shouldUpdateConfig() ){
+                            m_servo[i]->updateConfig();
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
 void PliersManager::processCanMsg(CanardRxTransfer * transfer){
+    switch (transfer->metadata.port_id) {
+        case ACTION_SERVO_SET_ANGLE_ID:{
+            processServoAngle(transfer);
+            break;
+        }
+        case ACTION_SERVO_SET_CONFIG_ID:{
+            processServoConfig(transfer);
+            break;
+        }
+        case ACTION_SERVO_SET_COLOR_ID:{
+            processServoColor(transfer);
+            break;
+        }
+        case ACTION_SLIDER_SET_POSITION_ID:{
+            processSliderPosition(transfer);
+            break;
+        }
+        case ACTION_SLIDER_SET_CONFIG_ID:{
+            processSliderConfig(transfer);
+            break;
+        }
+        case ACTION_PUMP_SET_STATUS_ID:{
+            processPumpStatus(transfer);
+            break;
+        }
+        case ACTION_VALVE_SET_STATUS_ID:{
+            processValveStatus(transfer);
+            break;
+        }
+        default:
+            Logging::println("[PliersManager] Subsription not handled");
+            break;
+    }
+}
 
-//    if(frame.ID == CAN_PLIERS_ID       ||
-//       frame.ID == CAN_PLIERS_BLOCK_ID ||
-//       frame.ID == CAN_ARMS_ID         ||
-//       frame.ID == CAN_SLIDERS_ID        ) {
-//        canFrame_t *pushed_frame = (canFrame_t *) chFifoTakeObjectTimeout(&m_orderQueue, TIME_IMMEDIATE);
-//        if ( pushed_frame == NULL) {
-//            Logging::println("[PliersManager] Queue full!");
-//        } else {
-//            *pushed_frame = frame;
-//            chFifoSendObject(&m_orderQueue, pushed_frame);
-//        }
-//    }
+void PliersManager::processServoAngle(CanardRxTransfer* transfer){
+    jeroboam_datatypes_actuators_servo_ServoAngle_0_1 servoAngle;
+    jeroboam_datatypes_actuators_servo_ServoAngle_0_1_deserialize_(&servoAngle,
+                                                                   (uint8_t *)transfer->payload,
+                                                                   &transfer->payload_size);
+
+}
+
+void PliersManager::processServoConfig(CanardRxTransfer* transfer){
+    jeroboam_datatypes_actuators_servo_ServoConfig_0_1 servoConfig;
+    jeroboam_datatypes_actuators_servo_ServoConfig_0_1_deserialize_(&servoConfig,
+                                                                    (uint8_t *)transfer->payload,
+                                                                    &transfer->payload_size);
+
+}
+
+void PliersManager::processServoColor(CanardRxTransfer* transfer){
+    //TODO
+}
+
+void PliersManager::processSliderPosition(CanardRxTransfer* transfer){
+    jeroboam_datatypes_actuators_servo_SliderPosition_0_1 sliderPosition;
+    jeroboam_datatypes_actuators_servo_SliderPosition_0_1_deserialize_(&sliderPosition,
+                                                                       (uint8_t *)transfer->payload,
+                                                                       &transfer->payload_size);
+
+}
+
+void PliersManager::processSliderConfig(CanardRxTransfer* transfer){
+    jeroboam_datatypes_actuators_servo_SliderConfig_0_1 sliderConfig;
+    jeroboam_datatypes_actuators_servo_SliderConfig_0_1_deserialize_(&sliderConfig,
+                                                                     (uint8_t *)transfer->payload,
+                                                                     &transfer->payload_size);
+
+}
+
+void PliersManager::processPumpStatus(CanardRxTransfer* transfer){
+    jeroboam_datatypes_actuators_pneumatics_PumpStatus_0_1 pumpStatus;
+    jeroboam_datatypes_actuators_pneumatics_PumpStatus_0_1_deserialize_(&pumpStatus,
+                                                                        (uint8_t *)transfer->payload,
+                                                                        &transfer->payload_size);
+
+}
+
+void PliersManager::processValveStatus(CanardRxTransfer* transfer){
+    jeroboam_datatypes_actuators_pneumatics_ValveStatus_0_1 valveStatus;
+    jeroboam_datatypes_actuators_pneumatics_ValveStatus_0_1_deserialize_(&valveStatus,
+                                                                         (uint8_t *)transfer->payload,
+                                                                         &transfer->payload_size);
+
 }
