@@ -6,7 +6,7 @@ constexpr uint16_t SERVO_MIN_ANGLE = 15;
 constexpr uint16_t SERVO_MAX_ANGLE = 90;
 constexpr uint16_t SERVO_INIT_ANGLE = 40;
 
-#if defined(WHITE_ROBOT)
+#if defined(RED_ROBOT)
 constexpr uint8_t PLIERS_FRONT_FAR_LEFT_ID  = 19;
 constexpr uint8_t PLIERS_FRONT_LEFT_ID      = 2;
 constexpr uint8_t PLIERS_FRONT_RIGHT_ID     = 4;
@@ -52,7 +52,7 @@ constexpr uint8_t PLIERS_BLOCK_RIGHT_ID   = 5;
 constexpr uint8_t PLIERS_BLOCK_RIGHT_IDLE_ANGLE = 220;
 constexpr uint8_t PLIERS_BLOCK_RIGHT_ACTIVE_ANGLE = 160;
 
-constexpr uint8_t SLIDER_ELEVATOR_ID = 1;
+#elif defined(BLUE_ROBOT)
 constexpr float   SLIDER_ELEVATOR_DISTANCE_PER_TURN = 15.3 * 2. * M_PI;
 
 
@@ -129,4 +129,4 @@ constexpr float   SLIDER_ELEVATOR_DISTANCE_PER_TURN = 15.3 * 2. * M_PI;
 
 #else
 #error "you must define a robot"
-#endif /* defined(WHITE_ROBOT) */
+#endif /* defined(RED_ROBOT) */
