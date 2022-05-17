@@ -1,10 +1,13 @@
 #include "Slider.hpp"
 #include "Board.hpp"
 #include "BuildConf.hpp"
+#include "RobotConf.hpp"
 #include "ch.hpp"
 #include "Logging.hpp"
 
-Slider::Slider(uint8_t id): Servo(id){}
+Slider::Slider(uint8_t id):
+Servo(id),
+m_position(0){}
 
 void Slider::init(){
     Logging::println("[Slider] init %d", m_id);
@@ -22,12 +25,31 @@ void Slider::init(){
     Logging::println("pos %f", pos);
 }
 
-void Slider::goToDistance(int16_t distance){
-    Dynamixel2Arduino * bus = Board::Com::DxlServo::getBus();
-    bus->setGoalPosition(m_id, (float)distance / SLIDER_ELEVATOR_DISTANCE_PER_TURN * 360., UNIT_DEGREE);
+void Slider::goToPosition(int16_t position){
+    if (m_position != position) {
+        m_position = position;
+        m_shouldUpdate = true;
+    }
+
 }
 
 void Slider::setPIDGains(uint16_t p, uint16_t i, uint16_t d){
+    m_config.position_p = p;
+    m_config.position_i = i;
+    m_config.position_d = d;
+    m_shouldUpdateConfig = true;
+}
+
+void Slider::update(){
     Dynamixel2Arduino * bus = Board::Com::DxlServo::getBus();
-    bus->setPositionPIDGain(m_id, p, i, d);
+    bus->setGoalPosition(m_id, (float)m_position / SLIDER_ELEVATOR_DISTANCE_PER_TURN * 360., UNIT_DEGREE);
+    m_shouldUpdate = false;
+}
+
+void Slider::updateConfig(){
+    Board::Com::DxlServo::lockBus();
+    Dynamixel2Arduino * bus = Board::Com::DxlServo::getBus();
+    bus->setPositionPIDGain(m_id, m_config.position_p, m_config.position_i, m_config.position_d);
+    Board::Com::DxlServo::unlockBus();
+    m_shouldUpdateConfig = false;
 }

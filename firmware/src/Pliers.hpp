@@ -32,6 +32,7 @@ public:
 
 protected:
 
+    int16_t m_angle;
     float m_idleAngle;
     float m_activeAngle;
 

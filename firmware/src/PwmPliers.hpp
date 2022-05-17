@@ -9,6 +9,8 @@ public:
     void activate() override;
     void deactivate() override;
     void setAngle(int16_t angle) override;
+    void update();
+    inline void updateConfig(){};
 
 protected:
     uint8_t m_channel;
