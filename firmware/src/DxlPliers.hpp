@@ -1,21 +1,15 @@
 #pragma once
 #include "Pliers.hpp"
 #include "Dynamixel2Arduino.h"
+#include "LocalMath.hpp"
+#include "ServoConfig.hpp"
 
 constexpr float DXL_PLIERS_TORQUE_LIMIT = 20.;
 constexpr uint16_t DXL_PLIERS_P_GAIN = 32;
 constexpr uint16_t DXL_PLIERS_I_GAIN = 10;
 constexpr uint16_t DXL_PLIERS_D_GAIN = 0;
 constexpr float    DXL_PLIERS_MOVING_SPEED_PERCENT = 20.;
-
-struct DxlPliersConfig {
-    float    torqueLimit;
-    float    movingSpeed;
-    uint16_t p;
-    uint16_t i;
-    uint16_t d;
-    enum LedColor color;
-};
+constexpr float    DXL_PLIERS_MAX_ANGLE_RAD = 300. / 360. * 2 * M_PI; // max angle is 300 degrees
 
 struct DxlPliersStatus {
     float angle;
@@ -31,8 +25,8 @@ public:
     void init() override;
     void activate() override;
     void deactivate() override;
-    void setAngle(int16_t angle) override;
-    void setConfig(DxlPliersConfig config);
+    void setAngle(float angle) override;
+    void setConfig(ServoConfig config);
     void reset();
     struct DxlPliersStatus getSatus();
     void update();

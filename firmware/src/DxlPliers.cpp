@@ -31,9 +31,11 @@ void DxlPliers::init(){
 }
 
 void DxlPliers::update() {
+    const float radToRAw = 1023 / DXL_PLIERS_MAX_ANGLE_RAD; // (1/DXL_PLIERS_MAX_ANGLE_RAD) * 1023 maps input [0 - DXL_PLIERS_MAX_ANGLE_RAD] to [0 - 1023]
     Board::Com::DxlServo::lockBus();
-    Board::Com::DxlServo::getBus()->setGoalPosition(m_id, m_angle, UNIT_DEGREE);
+    Board::Com::DxlServo::getBus()->setGoalPosition(m_id, m_angle * radToRAw, UNIT_RAW);
     Board::Com::DxlServo::unlockBus();
+    m_shouldUpdate = false;
 }
 
 void DxlPliers::updateConfig() {
@@ -54,16 +56,20 @@ void DxlPliers::activate() {
     Board::Com::DxlServo::getBus()->setGoalPosition(m_id, m_activeAngle, UNIT_DEGREE);
 }
 
-void DxlPliers::setAngle(int16_t angle) {
+void DxlPliers::setAngle(float angle) {
     if(angle != m_angle){
+        if(angle > DXL_PLIERS_MAX_ANGLE_RAD || angle < 0) {
+            Logging::println("[DxlPliers %u] Angle out of range %f > %f", m_angle, DXL_PLIERS_MAX_ANGLE_RAD);
+        }
         m_angle = angle;
         m_shouldUpdate = true;
     }
 }
 
-void DxlPliers::setConfig(DxlPliersConfig config) {
-    if(!memcmp(&config, &m_config, sizeof(DxlPliersConfig))) {
-        m_config = config;
+void DxlPliers::setConfig(ServoConfig config) {
+
+    if(memcmp(&config.dxlPliers, &m_config, sizeof(DxlPliersConfig))) {
+        m_config = config.dxlPliers;
         m_shouldUpdateConfig = true;
     }
 }
@@ -86,7 +92,7 @@ struct DxlPliersStatus DxlPliers::getSatus() {
     //TODO add remaining fields to lib
     status.angle = bus->getPresentPosition(m_id, UNIT_DEGREE);
     status.speed = bus->getPresentVelocity(m_id, UNIT_PERCENT);
-    status.load = bus->getPresentCurrent(m_id, UNIT_PERCENT);
+    status.load  = bus->getPresentCurrent(m_id, UNIT_PERCENT);
     Board::Com::DxlServo::unlockBus();
     return status;
 }

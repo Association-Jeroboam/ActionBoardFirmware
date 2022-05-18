@@ -5,7 +5,7 @@
 #include "DxlPliers.hpp"
 
 
-constexpr uint16_t PLIERS_MANAGER_WA = 0x300;
+constexpr uint16_t PLIERS_MANAGER_WA = 0x100;
 constexpr uint8_t  PLIERS_MANAGER_MAX_PLIERS_COUNT = 16;
 
 enum PlersManagerEventFlags {
@@ -31,8 +31,7 @@ private:
     void processServoColor(CanardRxTransfer* transfer);
     void processSliderPosition(CanardRxTransfer* transfer);
     void processSliderConfig(CanardRxTransfer* transfer);
-    void processPumpStatus(CanardRxTransfer* transfer);
-    void processValveStatus(CanardRxTransfer* transfer);
+    servoID servoProtocolIDToServoID(CanProtocolServoID protocolID);
     Servo * m_servo[PLIERS_MANAGER_MAX_PLIERS_COUNT];
 
     static PliersManager s_instance;

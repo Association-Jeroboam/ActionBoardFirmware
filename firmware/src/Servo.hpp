@@ -1,5 +1,6 @@
 #pragma once
 #include <inttypes.h>
+#include "ServoConfig.hpp"
 
 enum servoID {
     SERVO_ARM_LEFT_A,
@@ -24,6 +25,8 @@ class Servo {
 public:
     Servo(uint8_t id);
 
+    virtual void setAngle(float angle) = 0;
+    virtual void setConfig(ServoConfig config) = 0;
     virtual void update() = 0;
     virtual void updateConfig() = 0;
     inline bool shouldUpdate() {return m_shouldUpdate;};
@@ -31,6 +34,7 @@ public:
 
 protected:
     uint8_t m_id;
+    float m_angle;
     bool  m_shouldUpdate;
     bool  m_shouldUpdateConfig;
 

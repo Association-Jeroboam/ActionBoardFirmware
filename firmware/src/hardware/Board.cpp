@@ -28,20 +28,20 @@ CanardInstance canardInstance;
 CanRxThread canRxThread(&canardInstance);
 CanTxThread canTxThread(&canardInstance);
 
-static DxlPliers s_armLeftA(SERVO_ARM_LEFT_A_ID,   SERVO_ARM_LEFT_A_IDLE_ANGLE, SERVO_ARM_LEFT_A_IDLE_ANGLE + 10); //TODO change active angle
-static DxlPliers s_armLeftB(SERVO_ARM_LEFT_B_ID,   SERVO_ARM_LEFT_B_IDLE_ANGLE, SERVO_ARM_LEFT_B_IDLE_ANGLE + 10); //TODO change active angle
-static DxlPliers s_armLeftC(SERVO_ARM_LEFT_C_ID,   SERVO_ARM_LEFT_C_IDLE_ANGLE, SERVO_ARM_LEFT_C_IDLE_ANGLE + 10); //TODO change active angle
-static DxlPliers s_armLeftD(SERVO_ARM_LEFT_D_ID,   SERVO_ARM_LEFT_D_IDLE_ANGLE, SERVO_ARM_LEFT_D_IDLE_ANGLE + 10); //TODO change active angle
-static DxlPliers s_armLeftE(SERVO_ARM_LEFT_E_ID,   SERVO_ARM_LEFT_E_IDLE_ANGLE, SERVO_ARM_LEFT_E_IDLE_ANGLE + 10); //TODO change active angle
-static DxlPliers s_armRightA(SERVO_ARM_RIGHT_A_ID, SERVO_ARM_RIGHT_A_IDLE_ANGLE, SERVO_ARM_RIGHT_A_IDLE_ANGLE + 10); //TODO change active angle
-static DxlPliers s_armRightB(SERVO_ARM_RIGHT_B_ID, SERVO_ARM_RIGHT_B_IDLE_ANGLE, SERVO_ARM_RIGHT_B_IDLE_ANGLE + 10); //TODO change active angle
-static DxlPliers s_armRightC(SERVO_ARM_RIGHT_C_ID, SERVO_ARM_RIGHT_C_IDLE_ANGLE, SERVO_ARM_RIGHT_C_IDLE_ANGLE + 10); //TODO change active angle
-static DxlPliers s_armRightD(SERVO_ARM_RIGHT_D_ID, SERVO_ARM_RIGHT_D_IDLE_ANGLE, SERVO_ARM_RIGHT_D_IDLE_ANGLE + 10); //TODO change active angle
-static DxlPliers s_armRightE(SERVO_ARM_RIGHT_E_ID, SERVO_ARM_RIGHT_E_IDLE_ANGLE, SERVO_ARM_RIGHT_E_IDLE_ANGLE + 10); //TODO change active angle
-static DxlPliers s_rakeLeftTop(SERVO_RAKE_LEFT_TOP_ID, SERVO_RAKE_LEFT_TOP_IDLE_ANGLE, SERVO_RAKE_LEFT_TOP_IDLE_ANGLE + 10); //TODO change active angle
-static DxlPliers s_rakeLeftBottom(SERVO_RAKE_LEFT_BOTTOM_ID, SERVO_RAKE_LEFT_BOTTOM_IDLE_ANGLE, SERVO_RAKE_LEFT_BOTTOM_IDLE_ANGLE + 10); //TODO change active angle
-static DxlPliers s_rakeRightTop(SERVO_RAKE_RIGHT_TOP_ID, SERVO_RAKE_RIGHT_TOP_IDLE_ANGLE, SERVO_RAKE_RIGHT_TOP_IDLE_ANGLE + 10); //TODO change active angle
-static DxlPliers s_rakeRightBottom(SERVO_RAKE_RIGHT_BOTTOM_ID, SERVO_RAKE_RIGHT_BOTTOM_IDLE_ANGLE, SERVO_RAKE_RIGHT_BOTTOM_IDLE_ANGLE + 10); //TODO change active angle
+static DxlPliers s_armLeftA(SERVO_ARM_LEFT_A_ID,   SERVO_ARM_LEFT_A_IDLE_ANGLE, SERVO_ARM_LEFT_A_IDLE_ANGLE + M_PI/4); //TODO change active angle
+static DxlPliers s_armLeftB(SERVO_ARM_LEFT_B_ID,   SERVO_ARM_LEFT_B_IDLE_ANGLE, SERVO_ARM_LEFT_B_IDLE_ANGLE + M_PI/4); //TODO change active angle
+static DxlPliers s_armLeftC(SERVO_ARM_LEFT_C_ID,   SERVO_ARM_LEFT_C_IDLE_ANGLE, SERVO_ARM_LEFT_C_IDLE_ANGLE + M_PI/4); //TODO change active angle
+static DxlPliers s_armLeftD(SERVO_ARM_LEFT_D_ID,   SERVO_ARM_LEFT_D_IDLE_ANGLE, SERVO_ARM_LEFT_D_IDLE_ANGLE + M_PI/4); //TODO change active angle
+static DxlPliers s_armLeftE(SERVO_ARM_LEFT_E_ID,   SERVO_ARM_LEFT_E_IDLE_ANGLE, SERVO_ARM_LEFT_E_IDLE_ANGLE + M_PI/4); //TODO change active angle
+static DxlPliers s_armRightA(SERVO_ARM_RIGHT_A_ID, SERVO_ARM_RIGHT_A_IDLE_ANGLE, SERVO_ARM_RIGHT_A_IDLE_ANGLE + M_PI/4); //TODO change active angle
+static DxlPliers s_armRightB(SERVO_ARM_RIGHT_B_ID, SERVO_ARM_RIGHT_B_IDLE_ANGLE, SERVO_ARM_RIGHT_B_IDLE_ANGLE + M_PI/4); //TODO change active angle
+static DxlPliers s_armRightC(SERVO_ARM_RIGHT_C_ID, SERVO_ARM_RIGHT_C_IDLE_ANGLE, SERVO_ARM_RIGHT_C_IDLE_ANGLE + M_PI/4); //TODO change active angle
+static DxlPliers s_armRightD(SERVO_ARM_RIGHT_D_ID, SERVO_ARM_RIGHT_D_IDLE_ANGLE, SERVO_ARM_RIGHT_D_IDLE_ANGLE + M_PI/4); //TODO change active angle
+static DxlPliers s_armRightE(SERVO_ARM_RIGHT_E_ID, SERVO_ARM_RIGHT_E_IDLE_ANGLE, SERVO_ARM_RIGHT_E_IDLE_ANGLE + M_PI/4); //TODO change active angle
+static DxlPliers s_rakeLeftTop(SERVO_RAKE_LEFT_TOP_ID, SERVO_RAKE_LEFT_TOP_IDLE_ANGLE, SERVO_RAKE_LEFT_TOP_IDLE_ANGLE + M_PI/4); //TODO change active angle
+static DxlPliers s_rakeLeftBottom(SERVO_RAKE_LEFT_BOTTOM_ID, SERVO_RAKE_LEFT_BOTTOM_IDLE_ANGLE, SERVO_RAKE_LEFT_BOTTOM_IDLE_ANGLE + M_PI/4); //TODO change active angle
+static DxlPliers s_rakeRightTop(SERVO_RAKE_RIGHT_TOP_ID, SERVO_RAKE_RIGHT_TOP_IDLE_ANGLE, SERVO_RAKE_RIGHT_TOP_IDLE_ANGLE + M_PI/4); //TODO change active angle
+static DxlPliers s_rakeRightBottom(SERVO_RAKE_RIGHT_BOTTOM_ID, SERVO_RAKE_RIGHT_BOTTOM_IDLE_ANGLE, SERVO_RAKE_RIGHT_BOTTOM_IDLE_ANGLE + M_PI/4); //TODO change active angle
 
 static Slider s_leftSlider(LEFT_SLIDER_ID);
 static Slider s_rightSlider(RIGHT_SLIDER_ID);
@@ -114,11 +114,11 @@ void Board::Com::DxlServo::init(){
 }
 
 void Board::Com::DxlServo::lockBus(){
-    dxlBusMutex.lock();
+//    dxlBusMutex.lock();
 }
 
 void Board::Com::DxlServo::unlockBus(){
-    dxlBusMutex.unlock();
+//    dxlBusMutex.unlock();
 }
 
 Dynamixel2Arduino * Board::Com::DxlServo::getBus(){

@@ -7,8 +7,7 @@
 #include "ServoConfig_0_1.h"
 #include "SliderPosition_0_1.h"
 #include "SliderConfig_0_1.h"
-#include "PumpStatus_0_1.h"
-#include "ValveStatus_0_1.h"
+#include "ServoConfig.hpp"
 
 enum PliersManagerEvents {
     SelfEvent      = 1 << 0,
@@ -58,27 +57,20 @@ void PliersManager::main() {
                                 CanardTransferKindMessage,
                                 ACTION_SLIDER_SET_CONFIG_ID,
                                 jeroboam_datatypes_actuators_servo_SliderConfig_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
-    Com::CANBus::registerCanMsg(this,
-                                CanardTransferKindMessage,
-                                ACTION_PUMP_SET_STATUS_ID,
-                                jeroboam_datatypes_actuators_pneumatics_PumpStatus_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
-    Com::CANBus::registerCanMsg(this,
-                                CanardTransferKindMessage,
-                                ACTION_VALVE_SET_STATUS_ID,
-                                jeroboam_datatypes_actuators_pneumatics_ValveStatus_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
 
     while (!shouldTerminate()){
         eventmask_t event = waitOneEvent(SelfEvent);
-
         if(event & SelfEvent) {
             eventflags_t flags = m_selflistener.getAndClearFlags();
             if(flags & ServoUpdated) {
                 for (uint8_t i = 0; i < PLIERS_MANAGER_MAX_PLIERS_COUNT; i++) {
                     if(m_servo[i]) {
                         if (m_servo[i]->shouldUpdate() ){
+                            Logging::println("Update servo %u", i);
                             m_servo[i]->update();
                         }
                         if (m_servo[i]->shouldUpdateConfig() ){
+                            Logging::println("Update servo config %u", i);
                             m_servo[i]->updateConfig();
                         }
                     }
@@ -89,6 +81,7 @@ void PliersManager::main() {
 }
 
 void PliersManager::processCanMsg(CanardRxTransfer * transfer){
+    bool broadcastFlags = true;
     switch (transfer->metadata.port_id) {
         case ACTION_SERVO_SET_ANGLE_ID:{
             processServoAngle(transfer);
@@ -99,28 +92,27 @@ void PliersManager::processCanMsg(CanardRxTransfer * transfer){
             break;
         }
         case ACTION_SERVO_SET_COLOR_ID:{
+            Logging::println("[PliersManager] process ACTION_SERVO_SET_COLOR");
             processServoColor(transfer);
             break;
         }
         case ACTION_SLIDER_SET_POSITION_ID:{
+            Logging::println("[PliersManager] process ACTION_SLIDER_SET_POSITION");
             processSliderPosition(transfer);
             break;
         }
         case ACTION_SLIDER_SET_CONFIG_ID:{
+            Logging::println("[PliersManager] process ACTION_SLIDER_SET_CONFIG");
             processSliderConfig(transfer);
             break;
         }
-        case ACTION_PUMP_SET_STATUS_ID:{
-            processPumpStatus(transfer);
-            break;
-        }
-        case ACTION_VALVE_SET_STATUS_ID:{
-            processValveStatus(transfer);
-            break;
-        }
         default:
+            broadcastFlags = false;
             Logging::println("[PliersManager] Subsription not handled");
             break;
+    }
+    if(broadcastFlags) {
+        this->broadcastFlags(ServoUpdated);
     }
 }
 
@@ -129,7 +121,8 @@ void PliersManager::processServoAngle(CanardRxTransfer* transfer){
     jeroboam_datatypes_actuators_servo_ServoAngle_0_1_deserialize_(&servoAngle,
                                                                    (uint8_t *)transfer->payload,
                                                                    &transfer->payload_size);
-
+    Servo* servo = Actuators::getServoByID(servoProtocolIDToServoID((CanProtocolServoID)servoAngle.ID));
+    servo->setAngle(servoAngle.angle.radian);
 }
 
 void PliersManager::processServoConfig(CanardRxTransfer* transfer){
@@ -137,7 +130,17 @@ void PliersManager::processServoConfig(CanardRxTransfer* transfer){
     jeroboam_datatypes_actuators_servo_ServoConfig_0_1_deserialize_(&servoConfig,
                                                                     (uint8_t *)transfer->payload,
                                                                     &transfer->payload_size);
+    ServoConfig config;
+    config.dxlPliers.color = LedColor::LED_GREEN;
+    config.dxlPliers.torqueLimit = servoConfig._torque_limit;
+    config.dxlPliers.movingSpeed = servoConfig.moving_speed;
+    config.dxlPliers.p = servoConfig.pid.pid[0];
+    config.dxlPliers.i = servoConfig.pid.pid[1];
+    config.dxlPliers.d = servoConfig.pid.pid[2];
+    (void)servoConfig.pid.bias; //discard it for now
 
+    Servo* servo = Actuators::getServoByID(servoProtocolIDToServoID((CanProtocolServoID)servoConfig.ID));
+    servo->setConfig(config);
 }
 
 void PliersManager::processServoColor(CanardRxTransfer* transfer){
@@ -157,21 +160,42 @@ void PliersManager::processSliderConfig(CanardRxTransfer* transfer){
     jeroboam_datatypes_actuators_servo_SliderConfig_0_1_deserialize_(&sliderConfig,
                                                                      (uint8_t *)transfer->payload,
                                                                      &transfer->payload_size);
+    ServoConfig config;
+    config.sliderConfig.torqueLimit = 100;
+    config.sliderConfig.movingSpeed = 100;
+    config.sliderConfig.position_p = sliderConfig.position_pid.pid[0];
+    config.sliderConfig.position_i = sliderConfig.position_pid.pid[1];
+    config.sliderConfig.position_d = sliderConfig.position_pid.pid[2];
+    config.sliderConfig.speed_p = sliderConfig.speed_pi.pid[0];
+    config.sliderConfig.speed_i = sliderConfig.speed_pi.pid[1];
+    config.sliderConfig.ffwd1 = sliderConfig.feedforward_gains[0];
+    config.sliderConfig.ffwd2 = sliderConfig.feedforward_gains[1];
 
+    Servo* servo = Actuators::getServoByID(servoProtocolIDToServoID((CanProtocolServoID)sliderConfig.ID));
+    servo->setConfig(config);
 }
 
-void PliersManager::processPumpStatus(CanardRxTransfer* transfer){
-    jeroboam_datatypes_actuators_pneumatics_PumpStatus_0_1 pumpStatus;
-    jeroboam_datatypes_actuators_pneumatics_PumpStatus_0_1_deserialize_(&pumpStatus,
-                                                                        (uint8_t *)transfer->payload,
-                                                                        &transfer->payload_size);
-
-}
-
-void PliersManager::processValveStatus(CanardRxTransfer* transfer){
-    jeroboam_datatypes_actuators_pneumatics_ValveStatus_0_1 valveStatus;
-    jeroboam_datatypes_actuators_pneumatics_ValveStatus_0_1_deserialize_(&valveStatus,
-                                                                         (uint8_t *)transfer->payload,
-                                                                         &transfer->payload_size);
-
+servoID PliersManager::servoProtocolIDToServoID(CanProtocolServoID protocolID) {
+    switch (protocolID) {
+        case CAN_PROTOCOL_SERVO_ARM_LEFT_A:
+            return SERVO_ARM_LEFT_A;
+        case CAN_PROTOCOL_SERVO_ARM_LEFT_B:
+            return SERVO_ARM_LEFT_B;
+        case CAN_PROTOCOL_SERVO_ARM_LEFT_C:
+            return SERVO_ARM_LEFT_C;
+        case CAN_PROTOCOL_SERVO_ARM_LEFT_D:
+            return SERVO_ARM_LEFT_D;
+        case CAN_PROTOCOL_SERVO_ARM_LEFT_E:
+            return SERVO_ARM_LEFT_E;
+        case CAN_PROTOCOL_SERVO_ARM_RIGHT_A:
+            return SERVO_ARM_RIGHT_A;
+        case CAN_PROTOCOL_SERVO_ARM_RIGHT_B:
+            return SERVO_ARM_RIGHT_B;
+        case CAN_PROTOCOL_SERVO_ARM_RIGHT_C:
+            return SERVO_ARM_RIGHT_C;
+        case CAN_PROTOCOL_SERVO_ARM_RIGHT_D:
+            return SERVO_ARM_RIGHT_D;
+        case CAN_PROTOCOL_SERVO_ARM_RIGHT_E:
+            return SERVO_ARM_RIGHT_E;
+    }
 }

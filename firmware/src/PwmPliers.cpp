@@ -1,6 +1,7 @@
 #include "PwmPliers.hpp"
 #include "Board.hpp"
 #include "Logging.hpp"
+#include "LocalMath.hpp"
 
 PwmPliers::PwmPliers(uint8_t id, uint8_t channel, float idleAngle, float activeAngle): Pliers(id, idleAngle, activeAngle),
                                                                                        m_channel(channel){
@@ -21,13 +22,14 @@ void PwmPliers::deactivate(){
     m_shouldUpdate = true;
 }
 
-void PwmPliers::setAngle(int16_t angle){
+void PwmPliers::setAngle(float angle){
     m_angle = angle;
     m_shouldUpdate = true;
 
 }
 
 void PwmPliers::update(){
-    Board::Actuators::setPwmServo(m_angle);
+    const float radToDeg = 1./(2*M_PI)*360;
+    Board::Actuators::setPwmServo((uint16_t)(m_angle * radToDeg));
     m_shouldUpdate = false;
 }

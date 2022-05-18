@@ -1,3 +1,4 @@
+#include <cstring>
 #include "Slider.hpp"
 #include "Board.hpp"
 #include "BuildConf.hpp"
@@ -31,6 +32,19 @@ void Slider::goToPosition(int16_t position){
         m_shouldUpdate = true;
     }
 
+}
+
+void Slider::setAngle(float angle) {
+    m_position = angle * SLIDER_ELEVATOR_DISTANCE_PER_TURN / 360.;
+    m_shouldUpdate = true;
+}
+
+void Slider::setConfig(ServoConfig config) {
+
+    if(memcmp(&config.sliderConfig, &m_config, sizeof(DxlPliersConfig))) {
+        m_config = config.sliderConfig;
+        m_shouldUpdateConfig = true;
+    }
 }
 
 void Slider::setPIDGains(uint16_t p, uint16_t i, uint16_t d){

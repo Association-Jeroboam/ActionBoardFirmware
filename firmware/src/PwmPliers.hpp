@@ -1,5 +1,6 @@
 #pragma once
 #include "Pliers.hpp"
+#include "ServoConfig.hpp"
 
 
 class PwmPliers : public Pliers {
@@ -8,7 +9,8 @@ public:
     void init() override;
     void activate() override;
     void deactivate() override;
-    void setAngle(int16_t angle) override;
+    void setAngle(float angle) override;
+    inline void setConfig(ServoConfig config) {};
     void update();
     inline void updateConfig(){};
 
