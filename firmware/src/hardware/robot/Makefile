@@ -83,7 +83,7 @@ endif
 #
 
 # Define project name here
-PROJECT = ActuatorBoard
+PROJECT = ActionBoard
 TARGET_TYPE = hardware
 TARGER = robot
 
