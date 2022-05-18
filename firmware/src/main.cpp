@@ -11,8 +11,11 @@
 //#include "Adafruit_PWMServoDriver.h"
 #include "hal_pal.h"
 #include "Heartbeat_1_0.h"
+#include "PneumaticsManager.hpp"
 
 static THD_WORKING_AREA(waShellThread, SHELL_WA_SIZE);
+
+PneumaticsManager pneumatics_manager;
 
 void cyphalHeartBeatRoutine() {
     static CanardTransferID transfer_id = 0;
@@ -59,11 +62,12 @@ int main() {
     Logging::println("Starting up");
     shellInit();
     Board::init();
-
-//    PliersManager::instance()->start(NORMALPRIO);
+    chThdSleepMilliseconds(20);
+    PliersManager::instance()->start(NORMALPRIO);
+    pneumatics_manager.init();
     chThdCreateStatic(waShellThread, sizeof(waShellThread), NORMALPRIO,
                       shellThread, (void*)&shell_cfg);
-    chThdSleepMilliseconds(20);
+
 
     uint8_t id = 4;
     while (!chThdShouldTerminateX()) {
