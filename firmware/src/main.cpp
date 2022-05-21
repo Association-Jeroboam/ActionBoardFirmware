@@ -15,7 +15,7 @@
 
 static THD_WORKING_AREA(waShellThread, SHELL_WA_SIZE);
 
-PneumaticsManager pneumatics_manager;
+PneumaticsManager pneumaticsManager;
 
 void cyphalHeartBeatRoutine() {
     static CanardTransferID transfer_id = 0;
@@ -64,12 +64,12 @@ int main() {
     Board::init();
     chThdSleepMilliseconds(20);
     PliersManager::instance()->start(NORMALPRIO);
-    pneumatics_manager.init();
+    pneumaticsManager.init();
     chThdCreateStatic(waShellThread, sizeof(waShellThread), NORMALPRIO,
                       shellThread, (void*)&shell_cfg);
 
 
-    uint8_t id = 4;
+
     while (!chThdShouldTerminateX()) {
         Board::IO::toggleNucleoLed();
         Board::IO::getResistanceMeasure();

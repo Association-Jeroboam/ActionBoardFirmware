@@ -6,22 +6,20 @@
 
 using namespace Board;
 
-PneumaticsManager::PneumaticsManager()
-//:m_leftValveTimer(),
-//m_rightValveTimer()
+
+PneumaticsManager::PneumaticsManager():
+CanListener(),
+m_leftValveTimer(),
+m_rightValveTimer()
 {
 }
 
 static void leftPumpTimeoutCB(virtual_timer_t* timer, void * p) {
-    Logging::println("Left pump timeout cb");
     Board::Actuators::setValveState(Actuators::VALVE_LEFT, false);
-    chVTReset(timer);
 }
 
 static void rightPumpTimeoutCB(virtual_timer_t* timer, void * p) {
-    Logging::println("Right pump timeout cb");
     Board::Actuators::setValveState(Actuators::VALVE_RIGHT, false);
-    chVTReset(timer);
 }
 
 void PneumaticsManager::init(){
@@ -81,18 +79,15 @@ void PneumaticsManager::processValveStatus(CanardRxTransfer* transfer){
                                                                          &transfer->payload_size);
     switch(valveStatus.status.ID) {
         case CAN_PROTOCOL_PUMP_LEFT_ID:
-            Logging::println("[PneumaticsManager] Set valve %u : %u", CAN_PROTOCOL_PUMP_LEFT_ID, valveStatus.status.enabled);
             Board::Actuators::setValveState(Actuators::VALVE_LEFT, valveStatus.status.enabled.value);
-//            m_leftValveTimer.set(TIME_MS2I(PNEUMATICS_VALVE_ENABLED_TIMEOUT_MS), leftPumpTimeoutCB, nullptr);
+            m_leftValveTimer.set(TIME_MS2I(PNEUMATICS_VALVE_ENABLED_TIMEOUT_MS), leftPumpTimeoutCB, nullptr);
             break;
         case CAN_PROTOCOL_PUMP_RIGHT_ID:
-            Logging::println("[PneumaticsManager] Set valve %u : %u", CAN_PROTOCOL_PUMP_RIGHT_ID, valveStatus.status.enabled);
             Board::Actuators::setValveState(Actuators::VALVE_RIGHT, valveStatus.status.enabled.value);
-//            m_rightValveTimer.set(TIME_MS2I(PNEUMATICS_VALVE_ENABLED_TIMEOUT_MS), rightPumpTimeoutCB, nullptr);
+            m_rightValveTimer.set(TIME_MS2I(PNEUMATICS_VALVE_ENABLED_TIMEOUT_MS), rightPumpTimeoutCB, nullptr);
             break;
         default:
             Logging::println("Unknown Valve ID");
             break;
     }
 }
-

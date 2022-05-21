@@ -6,7 +6,7 @@
 
 constexpr uint32_t PNEUMATICS_VALVE_ENABLED_TIMEOUT_MS = 500;
 
-class PneumaticsManager:CanListener {
+class PneumaticsManager:public CanListener {
 public:
     PneumaticsManager();
     void init();
@@ -16,6 +16,7 @@ private:
 
     void processPumpStatus(CanardRxTransfer* transfer);
     void processValveStatus(CanardRxTransfer* transfer);
-//    chibios_rt::Timer m_leftValveTimer;
-//    chibios_rt::Timer m_rightValveTimer;
+    chibios_rt::Timer m_leftValveTimer;
+    chibios_rt::Timer m_rightValveTimer;
+
 };
