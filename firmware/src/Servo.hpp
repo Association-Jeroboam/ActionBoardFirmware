@@ -3,7 +3,7 @@
 #include "ServoConfig.hpp"
 
 enum servoID {
-    SERVO_ARM_LEFT_A,
+    SERVO_ARM_LEFT_A = 0,
     SERVO_ARM_LEFT_B,
     SERVO_ARM_LEFT_C,
     SERVO_ARM_LEFT_D,
@@ -27,6 +27,7 @@ public:
 
     virtual void setAngle(float angle) = 0;
     virtual void setConfig(ServoConfig config) = 0;
+    inline float getAngle() {return m_angle;};
     virtual void update() = 0;
     virtual void updateConfig() = 0;
     inline bool shouldUpdate() {return m_shouldUpdate;};

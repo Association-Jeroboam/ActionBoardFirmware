@@ -69,8 +69,8 @@ void Board::Com::CANBus::init(){
     canStart(&CAN_DRIVER, &canConfig);
     canardInstance = canardInit(canardSpecificHeapAlloc, canardSpecificHeapFree);
     canardInstance.node_id = CAN_PROTOCOL_ACTION_BOARD_ID;
-    canTxThread.start(NORMALPRIO);
-    canRxThread.start(NORMALPRIO+1);
+    canTxThread.start(NORMALPRIO+1);
+    canRxThread.start(NORMALPRIO+2);
     // let Threads finish initialization
     chThdYield();
 }

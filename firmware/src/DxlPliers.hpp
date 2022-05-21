@@ -26,6 +26,7 @@ public:
     void activate() override;
     void deactivate() override;
     void setAngle(float angle) override;
+    float getAngle();
     void setConfig(ServoConfig config);
     void reset();
     struct DxlPliersStatus getSatus();

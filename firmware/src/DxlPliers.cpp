@@ -66,6 +66,16 @@ void DxlPliers::setAngle(float angle) {
     }
 }
 
+float DxlPliers::getAngle() {
+    float angleRaw;
+    const float rawToRad = DXL_PLIERS_MAX_ANGLE_RAD / 1023;
+    Dynamixel2Arduino * bus = Board::Com::DxlServo::getBus();
+    Board::Com::DxlServo::lockBus();
+    angleRaw = bus->getPresentPosition(m_id, UNIT_RAW);
+    Board::Com::DxlServo::unlockBus();
+    return angleRaw * rawToRad;
+}
+
 void DxlPliers::setConfig(ServoConfig config) {
 
     if(memcmp(&config.dxlPliers, &m_config, sizeof(DxlPliersConfig))) {
