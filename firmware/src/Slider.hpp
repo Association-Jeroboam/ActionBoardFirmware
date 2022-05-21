@@ -10,11 +10,11 @@ public:
     Slider(uint8_t id);
     void init();
     void goToPosition(int16_t position);
-    void setAngle(float angle);
-    void setConfig(ServoConfig config);
+    void setAngle(float angle) override;
+    void setConfig(ServoConfig config) override;
     void setPIDGains(uint16_t p, uint16_t i, uint16_t d);
-    void update();
-    void updateConfig();
+    void update() override;
+    void updateConfig() override;
     //TODO: Calibration Method!
     //TODO: Handle rotation direction
 

@@ -146,7 +146,6 @@ static void cmd_servo(BaseSequentialStream* chp, int argc, char* argv[]) {
         if(angle>180) {
             goto usage;
         }
-        Board::Actuators::Valve valve;
         Board::Actuators::setPwmServo(angle);
     } else {
         goto usage;

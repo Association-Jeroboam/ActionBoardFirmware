@@ -10,9 +10,9 @@ public:
     void activate() override;
     void deactivate() override;
     void setAngle(float angle) override;
-    inline void setConfig(ServoConfig config) {};
-    void update();
-    inline void updateConfig(){};
+    inline void setConfig(ServoConfig config) override {};
+    void update() override;
+    inline void updateConfig() override {};
 
 protected:
     uint8_t m_channel;
