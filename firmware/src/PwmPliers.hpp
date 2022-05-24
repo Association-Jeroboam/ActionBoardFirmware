@@ -10,7 +10,7 @@ public:
     void activate() override;
     void deactivate() override;
     void setAngle(float angle) override;
-    inline void setConfig(ServoConfig config) override {};
+    inline void setConfig(ServoConfig config) override {(void)config;};
     void update() override;
     inline void updateConfig() override {};
 

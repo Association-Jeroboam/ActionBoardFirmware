@@ -15,10 +15,14 @@ m_rightValveTimer()
 }
 
 static void leftPumpTimeoutCB(virtual_timer_t* timer, void * p) {
+    (void)timer;
+    (void)p;
     Board::Actuators::setValveState(Actuators::VALVE_LEFT, false);
 }
 
 static void rightPumpTimeoutCB(virtual_timer_t* timer, void * p) {
+    (void)timer;
+    (void)p;
     Board::Actuators::setValveState(Actuators::VALVE_RIGHT, false);
 }
 

@@ -51,20 +51,21 @@ char* completion_buffer[SHELL_MAX_COMPLETIONS];
 
 static void cmd_pliers(BaseSequentialStream* chp, int argc, char* argv[]) {
     (void)chp;
-usage:
+    (void)argc;
+    (void)argv;
     Logging::println("usage:");
     Logging::println("pliers [pliersID] [open/close]");
 }
 
 static void cmd_pliers_block(BaseSequentialStream* chp, int argc, char* argv[]) {
     (void)chp;
-usage:
+    (void)argc;
+    (void)argv;
     Logging::println("usage:");
     Logging::println("pliers_block [engage/disengage]");
 }
 
 static void cmd_slider(BaseSequentialStream* chp, int argc, char* argv[]) {
-    (void)chp;
     (void)chp;
     if (argc == 2) {
         int16_t distance = atoi(argv[1]);
@@ -87,8 +88,8 @@ usage:
 
 static void cmd_arm(BaseSequentialStream* chp, int argc, char* argv[]) {
     (void)chp;
-    (void)chp;
-usage:
+    (void)argc;
+    (void)argv;
     Logging::println("usage:");
     Logging::println("arm [left/right] [state]");
 }
@@ -158,6 +159,9 @@ usage:
 }
 
 static void cmd_reboot(BaseSequentialStream* chp, int argc, char* argv[]) {
+    (void)chp;
+    (void)argc;
+    (void)argv;
     if (argc == 0) {
         NVIC_SystemReset();
     }

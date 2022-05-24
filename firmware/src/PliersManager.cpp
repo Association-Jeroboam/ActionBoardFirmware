@@ -19,12 +19,15 @@ using namespace Board;
 PliersManager PliersManager::s_instance;
 
 static void sendStatesTimerCB(virtual_timer_t* timer, void* p) {
+    (void)p;
     chVTDoSetI(timer, TIME_MS2I(PLIERS_MANAGER_CAN_UPDATE_PERIOD_MS), sendStatesTimerCB, nullptr);
     PliersManager::instance()->sendStates();
 
 }
 
 static void sendIndividualStateTimerCB(virtual_timer_t* timer, void* p) {
+    (void)timer;
+    (void)p;
     PliersManager::instance()->sendStates();
 }
 
@@ -70,7 +73,7 @@ void PliersManager::main() {
             }
             if (flags & SendStates ) {
                 if(doSendStates()) {
-                    m_sendIndividualStateTimer.set(TIME_US2I(PLIERS_MANAGER_CAN_UPDATE_MSG_PERIOD_US), sendStatesTimerCB, nullptr);
+                    m_sendIndividualStateTimer.set(TIME_US2I(PLIERS_MANAGER_CAN_UPDATE_MSG_PERIOD_US), sendIndividualStateTimerCB, nullptr);
                 }
             }
         }
@@ -106,6 +109,7 @@ bool PliersManager::doSendStates() {
             .transfer_kind = CanardTransferKindMessage,
             .port_id = ACTION_SERVO_CURRENT_ANGLE_ID,
             .remote_node_id = CANARD_NODE_ID_UNSET,
+            .transfer_id = 0,
     };
 
 
@@ -228,6 +232,7 @@ void PliersManager::processServoConfig(CanardRxTransfer* transfer){
 }
 
 void PliersManager::processServoColor(CanardRxTransfer* transfer){
+    (void)transfer;
     //TODO
 }
 
@@ -266,6 +271,7 @@ void PliersManager::processSliderConfig(CanardRxTransfer* transfer){
 bool PliersManager::servoProtocolIDToServoID(servoID* servoID, CanProtocolServoID protocolID) {
     bool success = true;
     switch (protocolID) {
+#if defined(RED_ROBOT)
         case CAN_PROTOCOL_SERVO_ARM_LEFT_A:
             *servoID = SERVO_ARM_LEFT_A; break;
         case CAN_PROTOCOL_SERVO_ARM_LEFT_B:
@@ -294,6 +300,16 @@ bool PliersManager::servoProtocolIDToServoID(servoID* servoID, CanProtocolServoI
             *servoID = SERVO_RAKE_RIGHT_TOP; break;
         case CAN_PROTOCOL_SERVO_RAKE_RIGHT_BOTTOM:
             *servoID = SERVO_RAKE_RIGHT_BOTTOM; break;
+#elif defined(BLUE_ROBOT)
+        case CAN_PROTOCOL_SERVO_PUSH_ARM_LEFT:
+            *servoID = SERVO_PUSH_ARM_LEFT; break;
+        case CAN_PROTOCOL_SERVO_PUSH_ARM_RIGHT:
+            *servoID = SERVO_PUSH_ARM_RIGHT; break;
+        case CAN_PROTOCOL_SERVO_MEASURE_FORK:
+            *servoID = SERVO_MEASURE_FORK; break;
+        case CAN_PROTOCOL_SERVO_PLIERS_INCLINATION:
+            *servoID = SERVO_PLIERS_INCLINATION; break;
+#endif
         default:
             Logging::println("[PliersManager] Protocol ID not handled %u", protocolID);
             success = false;
@@ -304,6 +320,7 @@ bool PliersManager::servoProtocolIDToServoID(servoID* servoID, CanProtocolServoI
 bool PliersManager::servoIDToservoProtocolID(CanProtocolServoID* protocolID, servoID servoID) {
     bool success = true;
     switch (servoID) {
+#if defined(RED_ROBOT)
         case SERVO_ARM_LEFT_A:
             *protocolID = CAN_PROTOCOL_SERVO_ARM_LEFT_A; break;
         case SERVO_ARM_LEFT_B:
@@ -332,6 +349,16 @@ bool PliersManager::servoIDToservoProtocolID(CanProtocolServoID* protocolID, ser
             *protocolID = CAN_PROTOCOL_SERVO_RAKE_RIGHT_TOP; break;
         case SERVO_RAKE_RIGHT_BOTTOM:
             *protocolID = CAN_PROTOCOL_SERVO_RAKE_RIGHT_BOTTOM; break;
+#elif defined(BLUE_ROBOT)
+        case SERVO_PUSH_ARM_LEFT:
+            *protocolID = CAN_PROTOCOL_SERVO_PUSH_ARM_LEFT; break;
+        case SERVO_PUSH_ARM_RIGHT:
+            *protocolID = CAN_PROTOCOL_SERVO_PUSH_ARM_RIGHT; break;
+        case SERVO_MEASURE_FORK:
+            *protocolID = CAN_PROTOCOL_SERVO_MEASURE_FORK; break;
+        case SERVO_PLIERS_INCLINATION:
+            *protocolID = CAN_PROTOCOL_SERVO_PLIERS_INCLINATION; break;
+#endif
         default:
             success = false;
 //            Logging::println("[PliersManager] Servo ID  not handled %u", servoID); break;

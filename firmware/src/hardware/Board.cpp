@@ -17,10 +17,12 @@
 chibios_rt::Mutex dxlBusMutex;
 
 inline void* canardSpecificHeapAlloc(CanardInstance* ins, size_t amount) {
+    (void)ins;
     return chHeapAlloc(NULL, amount);
 }
 
 inline void canardSpecificHeapFree(CanardInstance* ins, void* pointer) {
+    (void)ins;
     if(pointer) chHeapFree(pointer);
 }
 
@@ -160,6 +162,12 @@ void Board::Com::I2CBus::init(){
 }
 
 bool Board::Com::I2CBus::transmit(uint8_t addr, uint8_t *txData, uint8_t txLen, uint8_t *rxData, uint8_t rxLen){
+    (void)addr;
+    (void)txData;
+    (void)txLen;
+    (void)rxData;
+    (void)rxLen;
+
 //    i2cAcquireBus(&I2C_SERVO_DRIVER);
 //    msg_t ret = i2cMasterTransmitTimeout(&I2C_SERVO_DRIVER, addr, txData, txLen, rxData, rxLen, TIME_MS2I(10));
 //    i2cReleaseBus(&I2C_SERVO_DRIVER);
@@ -168,7 +176,10 @@ bool Board::Com::I2CBus::transmit(uint8_t addr, uint8_t *txData, uint8_t txLen, 
 }
 
 bool Board::Com::I2CBus::receive(uint8_t addr, uint8_t *rxData, uint8_t rxLen){
-//    i2cAcquireBus(&I2C_SERVO_DRIVER);
+    (void)addr;
+    (void)rxData;
+    (void)rxLen;
+//    i2cAcquireBus(&I2C_SERVO_DRIVER);(void);
 //    msg_t ret = i2cMasterReceiveTimeout(&I2C_SERVO_DRIVER, addr, rxData, rxLen, TIME_MS2I(10));
 //    i2cReleaseBus(&I2C_SERVO_DRIVER);
 //
