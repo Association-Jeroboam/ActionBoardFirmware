@@ -17,7 +17,7 @@
 
 static THD_WORKING_AREA(waShellThread, SHELL_WA_SIZE);
 //#ifdef RED_ROBOT
-//static PneumaticsManager pneumaticsManager;
+static PneumaticsManager pneumaticsManager;
 //#endif /* RED_ROBOT */
 //#ifdef BLUE_ROBOT
 //static ResistanceMeasure resistanceMeasure;

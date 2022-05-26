@@ -110,7 +110,7 @@ void Board::Com::DxlServo::init(){
     dxlBus = new Dynamixel2Arduino(&XL320_DRIVER);
     dxlBus->begin(DXL_BAUDRATE);
     dxlBus->setPortProtocolVersion(2.0);
-#if defined(RED_ROBOT)
+    #if defined(RED_ROBOT)
     s_armLeftA.init();
     s_armLeftB.init();
     s_armLeftC.init();
@@ -292,6 +292,5 @@ float Board::IO::getResistanceMeasure() {
         Logging::println("470R");
         resistance = 470;
     }
-    Logging::println("voltage %f", voltage);
     return resistance;
 }
