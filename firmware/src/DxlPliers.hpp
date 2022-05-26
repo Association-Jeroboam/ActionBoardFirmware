@@ -4,11 +4,11 @@
 #include "LocalMath.hpp"
 #include "ServoConfig.hpp"
 
-constexpr float DXL_PLIERS_TORQUE_LIMIT = 20.;
+constexpr float    DXL_PLIERS_TORQUE_LIMIT_RAW = 1023.;
 constexpr uint16_t DXL_PLIERS_P_GAIN = 32;
 constexpr uint16_t DXL_PLIERS_I_GAIN = 10;
 constexpr uint16_t DXL_PLIERS_D_GAIN = 0;
-constexpr float    DXL_PLIERS_MOVING_SPEED_PERCENT = 20.;
+constexpr float    DXL_PLIERS_MOVING_SPEED_RAW = 512.;
 constexpr float    DXL_PLIERS_MAX_ANGLE_RAD = 300. / 360. * 2 * M_PI; // max angle is 300 degrees
 
 struct DxlPliersStatus {

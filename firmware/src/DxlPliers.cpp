@@ -9,8 +9,8 @@ Pliers(id, idleAngle, activeAngle),
 m_config()
 {
     m_config = (DxlPliersConfig){
-        .torqueLimit = DXL_PLIERS_TORQUE_LIMIT,
-        .movingSpeed = DXL_PLIERS_MOVING_SPEED_PERCENT,
+        .torqueLimit = DXL_PLIERS_TORQUE_LIMIT_RAW,
+        .movingSpeed = DXL_PLIERS_MOVING_SPEED_RAW,
         .p = DXL_PLIERS_P_GAIN,
         .i = DXL_PLIERS_I_GAIN,
         .d = DXL_PLIERS_D_GAIN,
@@ -32,10 +32,11 @@ void DxlPliers::init(){
 }
 
 void DxlPliers::update() {
-    const float radToRAw = 1023 / DXL_PLIERS_MAX_ANGLE_RAD; // (1/DXL_PLIERS_MAX_ANGLE_RAD) * 1023 maps input [0 - DXL_PLIERS_MAX_ANGLE_RAD] to [0 - 1023]
+    const float radToDeg = 360./(2* M_PI); // (1/DXL_PLIERS_MAX_ANGLE_RAD) * 1023 maps input [0 - DXL_PLIERS_MAX_ANGLE_RAD] to [0 - 1023]
     Board::Com::DxlServo::lockBus();
-    Board::Com::DxlServo::getBus()->setGoalPosition(m_id, m_angle * radToRAw, UNIT_RAW);
+    Board::Com::DxlServo::getBus()->setGoalPosition(m_id, m_angle * radToDeg, UNIT_DEGREE);
     Board::Com::DxlServo::unlockBus();
+    Logging::println("DXL set angle raw %f", m_angle * radToDeg);
     m_shouldUpdate = false;
 }
 
@@ -44,11 +45,15 @@ void DxlPliers::updateConfig() {
     Board::Com::DxlServo::lockBus();
     bus->torqueOff(m_id);
     bus->setPositionPIDGain(m_id, m_config.p, m_config.i, m_config.d);
-    bus->setTorqueLimit(m_id, m_config.torqueLimit, UNIT_PERCENT);
-    bus->setGoalVelocity(m_id, m_config.movingSpeed, UNIT_PERCENT); //TODO check unit conversion
+    bus->setTorqueLimit(m_id, m_config.torqueLimit, UNIT_RAW);
+    bus->setGoalVelocity(m_id, m_config.movingSpeed, UNIT_RAW); //TODO check unit conversion
     bus->ledOn(m_id, m_config.color);
     bus->torqueOn(m_id);
     Board::Com::DxlServo::unlockBus();
+
+    Logging::println("PositionPIDGain %u %u %u", m_config.p, m_config.i, m_config.d );
+    Logging::println("TorqueLimit %f", m_config.torqueLimit );
+    Logging::println("GoalVelocity %f", m_config.movingSpeed );
     m_shouldUpdateConfig = false;
 }
 
