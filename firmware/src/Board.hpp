@@ -12,18 +12,26 @@ namespace Board {
         void toggleNucleoLed();
         void toggleLed2();
         void toggleLed3();
+        float getResistanceMeasure();
     }
 
     namespace Com {
         void init();
         namespace CANBus {
             void init();
-            bool send(canFrame_t canData);
-            void registerListener(CanListener * listener);
+            bool send(const CanardTransferMetadata* const metadata,
+                      const size_t                        payload_size,
+                      const void* const                   payload);
+            void registerCanMsg(CanListener *listener,
+                                CanardTransferKind transfer_kind,
+                                CanardPortID port_id,
+                                size_t extent);
         }
 
         namespace DxlServo {
             void init();
+            void lockBus();
+            void unlockBus();
             Dynamixel2Arduino * getBus();
 
         }
@@ -40,14 +48,25 @@ namespace Board {
             ARM_LEFT,
             ARM_RIGHT,
         };
+        enum Pump {
+            PUMP_LEFT  = 0,
+            PUMP_RIGHT = 1,
+        };
+        enum Valve {
+            VALVE_LEFT  = 0,
+            VALVE_RIGHT = 1,
+        };
         void init();
-        Pliers* getPliersByID(enum pliersID ID);
+        Servo* getServoByID(enum servoID ID);
         void engagePliersBlock();
         void disengagePliersBlock();
         void activateArm(enum arm);
         void deactivateArm(enum arm);
+        void setPumpState(enum Pump, bool enabled);
+        void setValveState(enum Valve, bool opened);
+
         void elevatorSetHeigth(int16_t height);
-        void setPwmServo(uint8_t channel, uint16_t value);
+        void setPwmServo(uint16_t angle);
         Pliers * getFlagPliers();
     }
 }

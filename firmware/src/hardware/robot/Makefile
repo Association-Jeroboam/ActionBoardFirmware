@@ -5,7 +5,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -Os -ggdb -fomit-frame-pointer -falign-functions=16 -specs=nano.specs -specs=nosys.specs -lm
+  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16 -specs=nano.specs -specs=nosys.specs -lm
 endif
 
 # C specific options here (added to USE_OPT).
@@ -83,7 +83,7 @@ endif
 #
 
 # Define project name here
-PROJECT = ActuatorBoard
+PROJECT = ActionBoard
 TARGET_TYPE = hardware
 TARGER = robot
 
@@ -100,6 +100,7 @@ DEPDIR    := ./.dep
 COMMONDIR := $(ROOTDIR)/common
 FIRMWAREDIR := $(ROOTDIR)/firmware
 SOURCEDIR   := $(FIRMWAREDIR)/src
+LIBDIR    := $(FIRMWAREDIR)/libs
 PARAMDIR  := ./param
 
 # Licensing files.
@@ -161,8 +162,8 @@ CPPWARN = -Wall -Wextra -Wundef
 #
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS = -DWHITE_ROBOT
-#UDEFS = -DBRUT_ROBOT
+UDEFS = -DBLUE_ROBOT
+#UDEFS = -DRED_ROBOT
 
 # Define ASM defines here
 UADEFS =

@@ -31,7 +31,7 @@
 #include "Logging.hpp"
 #include "CanProtocol.hpp"
 #include "PliersManager.hpp"
-
+#include "Board.hpp"
 
 char** endptr;
 
@@ -49,134 +49,95 @@ char* completion_buffer[SHELL_MAX_COMPLETIONS];
  * Shell commands
  */
 
-static void cmd_pliers(BaseSequentialStream* chp, int argc, char* argv[]) {
-    (void)chp;
-    if (argc == 2) {
-        enum pliersID id = (enum pliersID)atoi(argv[0]);
-        enum pliersState state;
-        if(!strcmp(argv[1], "open")) {
-            state = PLIERS_IDLE;
-        } else if(!strcmp(argv[1], "close")) {
-            state = PLIERS_ACTIVATED;
-        } else {
-            goto usage;
-        }
-
-        if(id > PLIERS_REAR_FAR_LEFT){
-            Logging::println("Bad ID");
-            goto usage;
-        }
-
-        canFrame_t frame = {
-            .ID = CAN_PLIERS_ID,
-            .len = CAN_PLIERS_LEN,
-        };
-        frame.data.pliersData = {
-            .plierID = id,
-            .state = state,
-        };
-        PliersManager::instance()->processFrame(frame);
-    } else {
-        goto usage;
-    }
-    return;
-
-usage:
-    Logging::println("usage:");
-    Logging::println("pliers [pliersID] [open/close]");
-}
-
-static void cmd_pliers_block(BaseSequentialStream* chp, int argc, char* argv[]) {
-    (void)chp;
-    if (argc == 1) {
-        uint8_t state;
-        if(!strcmp(argv[0], "engage")) {
-            state = 1;
-        } else if(!strcmp(argv[0], "disengage")) {
-            state = 0;
-        } else {
-            goto usage;
-        }
-
-        canFrame_t frame = {
-                .ID = CAN_PLIERS_BLOCK_ID,
-                .len = CAN_PLIERS_BLOCK_LEN,
-        };
-        frame.data.pliersBlockData = {
-                .state = state,
-        };
-        PliersManager::instance()->processFrame(frame);
-    } else {
-        goto usage;
-    }
-    return;
-
-usage:
-    Logging::println("usage:");
-    Logging::println("pliers_block [engage/disengage]");
-}
-
-static void cmd_slider(BaseSequentialStream* chp, int argc, char* argv[]) {
-    (void)chp;
-    (void)chp;
-    if (argc == 2) {
-        int16_t distance = atoi(argv[1]);
-        if(!strcmp(argv[0], "elevator")) {
-            Board::Actuators::elevatorSetHeigth(distance);
-        } else if(!strcmp(argv[0], "translator")) {
-            Logging::println("Not supported yet");
-        } else {
-            goto usage;
-        }
-    } else {
-        goto usage;
-    }
-    return;
-
-    usage:
-    Logging::println("usage:");
-    Logging::println("slider [elevator/translator] [distance (mm)]");
-}
 
 static void cmd_arm(BaseSequentialStream* chp, int argc, char* argv[]) {
     (void)chp;
+    (void)argc;
+    (void)argv;
+    Logging::println("usage:");
+    Logging::println("arm [left/right] [state]");
+    Logging::println("NOT IMPLEMENTED.");
+}
+
+static void cmd_pump(BaseSequentialStream* chp, int argc, char* argv[]) {
     (void)chp;
     if (argc == 2) {
         uint8_t state = atoi(argv[1]);
-        canFrame_t frame = {
-                .ID = CAN_ARMS_ID,
-                .len = CAN_ARMS_LEN,
-        };
+        Board::Actuators::Pump pump;
         if(!strcmp(argv[0], "left")) {
-            frame.data.armData.armID = ARM_LEFT;
+            pump = Board::Actuators::PUMP_LEFT;
         } else if(!strcmp(argv[0], "right")) {
-            frame.data.armData.armID = ARM_RIGHT;
+            pump = Board::Actuators::PUMP_RIGHT;
         } else {
             goto usage;
         }
-        if(state == PLIERS_IDLE) {
-            frame.data.armData.state = PLIERS_IDLE;
-        } else if (state == PLIERS_ACTIVATED){
-            frame.data.armData.state = PLIERS_ACTIVATED;
-        } else {
-            Logging::println("This arm does not exist");
-        }
-        PliersManager::instance()->processFrame(frame);
+        Board::Actuators::setPumpState(pump, state == 1);
     } else {
         goto usage;
     }
     return;
 
-    usage:
+usage:
     Logging::println("usage:");
-    Logging::println("arm [left/right] [state]");
+    Logging::println("pump [left/right] [0/1]");
+}
+
+static void cmd_valve(BaseSequentialStream* chp, int argc, char* argv[]) {
+    (void)chp;
+    if (argc == 2) {
+        uint8_t state = atoi(argv[1]);
+        Board::Actuators::Valve valve;
+        if(!strcmp(argv[0], "left")) {
+            valve = Board::Actuators::VALVE_LEFT;
+        } else if(!strcmp(argv[0], "right")) {
+            valve = Board::Actuators::VALVE_RIGHT;
+        } else {
+            goto usage;
+        }
+        Board::Actuators::setValveState(valve, state == 1);
+    } else {
+        goto usage;
+    }
+    return;
+
+usage:
+    Logging::println("usage:");
+    Logging::println("valve [left/right] [0/1]");
+}
+
+static void cmd_servo(BaseSequentialStream* chp, int argc, char* argv[]) {
+    (void)chp;
+    if (argc == 1) {
+        uint16_t angle = atoi(argv[0]);
+        if(angle>180) {
+            goto usage;
+        }
+        Board::Actuators::setPwmServo(angle);
+    } else {
+        goto usage;
+    }
+    return;
+
+usage:
+    Logging::println("usage:");
+    Logging::println("servo [0-180]");
+}
+
+static void cmd_reboot(BaseSequentialStream* chp, int argc, char* argv[]) {
+    (void)chp;
+    (void)argc;
+    (void)argv;
+    if (argc == 0) {
+        NVIC_SystemReset();
+    }
 }
 
 static const ShellCommand commands[] = {
-    {"pliers", cmd_pliers},
-    {"pliers_block", cmd_pliers_block},
-    {"slider", cmd_slider},
     {"arm", cmd_arm},
+    {"pump", cmd_pump},
+    {"valve", cmd_valve},
+    {"servo", cmd_servo},
+    {"reboot", cmd_reboot},
     {NULL, NULL},
 };
 /*
