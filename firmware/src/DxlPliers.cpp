@@ -1,4 +1,5 @@
 #include <cstring>
+#include <cmath>
 #include "DxlPliers.hpp"
 #include "ch.hpp"
 #include "Board.hpp"
@@ -69,9 +70,15 @@ void DxlPliers::activate() {
 
 void DxlPliers::setAngle(float angle) {
     if(angle != m_angle){
-        if(angle > DXL_PLIERS_MAX_ANGLE_RAD || angle < 0) {
-            Logging::println("[DxlPliers %u] Angle out of range %f > %f", m_angle, DXL_PLIERS_MAX_ANGLE_RAD);
+        float maxAngle = fmax(m_idleAngle, m_activeAngle);
+        float minAngle = fmin(m_idleAngle, m_activeAngle);
+        if(angle > maxAngle){
+            angle = maxAngle;
         }
+        if(angle < minAngle){
+            angle = minAngle;
+        }
+        Logging::println("[DxlPliers %u] Angle out of range %f > %f", m_angle, DXL_PLIERS_MAX_ANGLE_RAD);
         m_angle = angle;
         m_shouldUpdate = true;
     }
