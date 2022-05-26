@@ -63,7 +63,9 @@ void Slider::update(){
 void Slider::updateConfig(){
     Board::Com::DxlServo::lockBus();
     Dynamixel2Arduino * bus = Board::Com::DxlServo::getBus();
+    bus->torqueOff(m_id);
     bus->setPositionPIDGain(m_id, m_config.position_p, m_config.position_i, m_config.position_d);
+    bus->torqueOn(m_id);
     Board::Com::DxlServo::unlockBus();
     m_shouldUpdateConfig = false;
 }

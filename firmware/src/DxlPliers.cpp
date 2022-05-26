@@ -28,6 +28,7 @@ void DxlPliers::init(){
     chThdSleepMilliseconds(20);
 
     reset();
+    deactivate();
 }
 
 void DxlPliers::update() {
@@ -39,21 +40,26 @@ void DxlPliers::update() {
 }
 
 void DxlPliers::updateConfig() {
+    Dynamixel2Arduino * bus = Board::Com::DxlServo::getBus();
     Board::Com::DxlServo::lockBus();
-    Board::Com::DxlServo::getBus()->setPositionPIDGain(m_id, m_config.p, m_config.i, m_config.d);
-    Board::Com::DxlServo::getBus()->setTorqueLimit(m_id, m_config.torqueLimit, UNIT_PERCENT);
-    Board::Com::DxlServo::getBus()->setGoalVelocity(m_id, m_config.movingSpeed, UNIT_PERCENT); //TODO check unit conversion
-    Board::Com::DxlServo::getBus()->ledOn(m_id, m_config.color);
+    bus->torqueOff(m_id);
+    bus->setPositionPIDGain(m_id, m_config.p, m_config.i, m_config.d);
+    bus->setTorqueLimit(m_id, m_config.torqueLimit, UNIT_PERCENT);
+    bus->setGoalVelocity(m_id, m_config.movingSpeed, UNIT_PERCENT); //TODO check unit conversion
+    bus->ledOn(m_id, m_config.color);
+    bus->torqueOn(m_id);
     Board::Com::DxlServo::unlockBus();
     m_shouldUpdateConfig = false;
 }
 
 void DxlPliers::deactivate() {
-    Board::Com::DxlServo::getBus()->setGoalPosition(m_id, m_idleAngle, UNIT_DEGREE);
+    m_angle = m_idleAngle;
+    m_shouldUpdate = true;
 }
 
 void DxlPliers::activate() {
-    Board::Com::DxlServo::getBus()->setGoalPosition(m_id, m_activeAngle, UNIT_DEGREE);
+    m_angle = m_activeAngle;
+    m_shouldUpdate = true;
 }
 
 void DxlPliers::setAngle(float angle) {
