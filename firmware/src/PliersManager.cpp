@@ -8,6 +8,7 @@
 #include "ServoConfig_0_1.h"
 #include "SliderPosition_0_1.h"
 #include "SliderConfig_0_1.h"
+#include "PliersStatus_0_1.h"
 #include "ServoConfig.hpp"
 
 enum PliersManagerEvents {
@@ -63,6 +64,8 @@ void PliersManager::main() {
     m_eventSource.registerMask(&m_selflistener, SelfEvent);
 
     subscribeCanTopics();
+
+    checkServoUpdate();
 
     while (!shouldTerminate()){
         eventmask_t event = waitOneEvent(SelfEvent);
@@ -160,6 +163,10 @@ void PliersManager::subscribeCanTopics() {
                                 CanardTransferKindMessage,
                                 ACTION_SLIDER_SET_CONFIG_ID,
                                 jeroboam_datatypes_actuators_servo_SliderConfig_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
+    Com::CANBus::registerCanMsg(this,
+                                CanardTransferKindMessage,
+                                ACTION_SERVO_SET_PLIERS_ID,
+                                jeroboam_datatypes_actuators_servo_PliersStatus_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
 }
 
 void PliersManager::processCanMsg(CanardRxTransfer * transfer){
@@ -187,6 +194,10 @@ void PliersManager::processCanMsg(CanardRxTransfer * transfer){
             Logging::println("[PliersManager] process ACTION_SLIDER_SET_CONFIG");
             processSliderConfig(transfer);
             break;
+        }
+        case ACTION_SERVO_SET_PLIERS_ID:{
+            Logging::println("[PliersManager] process ACTION_SERVO_SET_PLIERS");
+            processPliersStatus(transfer);
         }
         default:
             broadcastFlags = false;
@@ -268,6 +279,22 @@ void PliersManager::processSliderConfig(CanardRxTransfer* transfer){
 
 }
 
+void PliersManager::processPliersStatus(CanardRxTransfer* transfer) {
+    jeroboam_datatypes_actuators_servo_PliersStatus_0_1 pliersStatus;
+    jeroboam_datatypes_actuators_servo_PliersStatus_0_1_deserialize_(&pliersStatus,
+                                                                     (uint8_t *)transfer->payload,
+                                                                     &transfer->payload_size);
+#if defined(RED_ROBOT)
+#elif defined(BLUE_ROBOT)
+    Pliers* pliers = (Pliers*)Actuators::getServoByID(SERVO_PLIERS);
+    if(pliersStatus.active.value) {
+        pliers->activate();
+    } else {
+        pliers->deactivate();
+    }
+#endif
+}
+
 bool PliersManager::servoProtocolIDToServoID(servoID* servoID, CanProtocolServoID protocolID) {
     bool success = true;
     switch (protocolID) {
@@ -309,6 +336,8 @@ bool PliersManager::servoProtocolIDToServoID(servoID* servoID, CanProtocolServoI
             *servoID = SERVO_MEASURE_FORK; break;
         case CAN_PROTOCOL_SERVO_PLIERS_INCLINATION:
             *servoID = SERVO_PLIERS_INCLINATION; break;
+        case CAN_PROTOCOL_SERVO_PLIERS:
+            *servoID = SERVO_PLIERS; break;
 #endif
         default:
             Logging::println("[PliersManager] Protocol ID not handled %u", protocolID);
@@ -358,6 +387,8 @@ bool PliersManager::servoIDToservoProtocolID(CanProtocolServoID* protocolID, ser
             *protocolID = CAN_PROTOCOL_SERVO_MEASURE_FORK; break;
         case SERVO_PLIERS_INCLINATION:
             *protocolID = CAN_PROTOCOL_SERVO_PLIERS_INCLINATION; break;
+        case SERVO_PLIERS:
+            *protocolID = CAN_PROTOCOL_SERVO_PLIERS; break;
 #endif
         default:
             success = false;

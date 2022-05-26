@@ -36,6 +36,7 @@ private:
     void processServoColor(CanardRxTransfer* transfer);
     void processSliderPosition(CanardRxTransfer* transfer);
     void processSliderConfig(CanardRxTransfer* transfer);
+    void processPliersStatus(CanardRxTransfer* transfer);
     bool servoProtocolIDToServoID(servoID* servoID, CanProtocolServoID protocolID);
     bool servoIDToservoProtocolID(CanProtocolServoID* protocolID, servoID servoID);
     Servo * m_servo[PLIERS_MANAGER_MAX_PLIERS_COUNT];
