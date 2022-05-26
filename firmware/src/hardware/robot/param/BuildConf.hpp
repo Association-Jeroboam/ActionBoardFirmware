@@ -33,7 +33,7 @@
 #define CAN_RX_PIN_MODE PAL_MODE_ALTERNATE(9)
 
 CANConfig const canConfig = {
-        .NBTP = 0x2030C01,
+        .NBTP = 0x2070C01,
         .DBTP = 0,
         .CCCR = 0,
         .TEST = 0,

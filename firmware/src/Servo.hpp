@@ -3,6 +3,7 @@
 #include "ServoConfig.hpp"
 
 enum servoID {
+#if defined(RED_ROBOT)
     SERVO_ARM_LEFT_A = 0,
     SERVO_ARM_LEFT_B,
     SERVO_ARM_LEFT_C,
@@ -19,6 +20,13 @@ enum servoID {
     SERVO_RAKE_RIGHT_BOTTOM,
     LEFT_SLIDER,
     RIGHT_SLIDER,
+#elif defined(BLUE_ROBOT)
+    SERVO_PUSH_ARM_LEFT,
+    SERVO_PUSH_ARM_RIGHT,
+    SERVO_MEASURE_FORK,
+    SERVO_PLIERS_INCLINATION,
+    SERVO_PLIERS,
+#endif
 };
 
 class Servo {

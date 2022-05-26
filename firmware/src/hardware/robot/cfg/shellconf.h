@@ -58,7 +58,11 @@
  * @brief   Prompt string
  */
 #if !defined(SHELL_PROMPT_STR) || defined(__DOXYGEN__)
-#define SHELL_PROMPT_STR            "ActionBoard> "
+#ifdef RED_ROBOT
+#define SHELL_PROMPT_STR            "RedRobotActionBoard> "
+#elif defined BLUE_ROBOT
+#define SHELL_PROMPT_STR            "BlueRobotActionBoard> "
+#endif /* RED_ROBOT || BLUE_ROBOT */
 #endif
 
 /**

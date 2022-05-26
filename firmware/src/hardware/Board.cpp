@@ -30,6 +30,7 @@ CanardInstance canardInstance;
 CanRxThread canRxThread(&canardInstance);
 CanTxThread canTxThread(&canardInstance);
 
+#if defined(RED_ROBOT)
 static DxlPliers s_armLeftA(SERVO_ARM_LEFT_A_ID,   SERVO_ARM_LEFT_A_IDLE_ANGLE, SERVO_ARM_LEFT_A_IDLE_ANGLE + M_PI/4); //TODO change active angle
 static DxlPliers s_armLeftB(SERVO_ARM_LEFT_B_ID,   SERVO_ARM_LEFT_B_IDLE_ANGLE, SERVO_ARM_LEFT_B_IDLE_ANGLE + M_PI/4); //TODO change active angle
 static DxlPliers s_armLeftC(SERVO_ARM_LEFT_C_ID,   SERVO_ARM_LEFT_C_IDLE_ANGLE, SERVO_ARM_LEFT_C_IDLE_ANGLE + M_PI/4); //TODO change active angle
@@ -47,7 +48,21 @@ static DxlPliers s_rakeRightBottom(SERVO_RAKE_RIGHT_BOTTOM_ID, SERVO_RAKE_RIGHT_
 
 static Slider s_leftSlider(LEFT_SLIDER_ID);
 static Slider s_rightSlider(RIGHT_SLIDER_ID);
-
+#elif defined(BLUE_ROBOT)
+static DxlPliers s_pushArmLeft(SERVO_PUSH_ARM_LEFT_ID,
+                               SERVO_PUSH_ARM_LEFT_IDLE_ANGLE,
+                               SERVO_PUSH_ARM_LEFT_ACTIVE_ANGLE);
+static DxlPliers s_pushArmRight(SERVO_PUSH_ARM_RIGHT_ID,
+                                SERVO_PUSH_ARM_RIGHT_IDLE_ANGLE,
+                                SERVO_PUSH_ARM_RIGHT_ACTIVE_ANGLE);
+static DxlPliers s_measureFork(SERVO_MEASURE_FORK_ID,
+                               SERVO_MEASURE_FORK_IDLE_ANGLE,
+                               SERVO_MEASURE_FORK_ACTIVE_ANGLE);
+static DxlPliers s_pliersInclination(SERVO_PLIERS_INCLINATION_ID,
+                                     SERVO_PLIERS_INCLINATION_IDLE_ANGLE,
+                                     SERVO_PLIERS_INCLINATION_ACTIVE_ANGLE);
+static PwmPliers s_pliers(0, PWM_PLIERS_CHANNEL_NUMBER, SERVO_PLIERS_IDLE_ANGLE, SERVO_PLIERS_ACTIVE_ANGLE);
+#endif
 constexpr uint32_t DXL_BAUDRATE = 1000000;
 Dynamixel2Arduino * dxlBus;
 
@@ -95,7 +110,7 @@ void Board::Com::DxlServo::init(){
     dxlBus = new Dynamixel2Arduino(&XL320_DRIVER);
     dxlBus->begin(DXL_BAUDRATE);
     dxlBus->setPortProtocolVersion(2.0);
-
+#if defined(RED_ROBOT)
     s_armLeftA.init();
     s_armLeftB.init();
     s_armLeftC.init();
@@ -112,6 +127,12 @@ void Board::Com::DxlServo::init(){
     s_rakeRightBottom.init();
     s_leftSlider.init();
     s_rightSlider.init();
+#elif defined(BLUE_ROBOT)
+    s_pushArmLeft.init();
+    s_pushArmRight.init();
+    s_measureFork.init();
+    s_pliersInclination.init();
+#endif
 
 }
 
@@ -130,27 +151,36 @@ Dynamixel2Arduino * Board::Com::DxlServo::getBus(){
 Servo*  Board::Actuators::getServoByID(enum servoID ID){
 
     switch (ID) {
-        case SERVO_ARM_LEFT_A: return &s_armLeftA;
-        case SERVO_ARM_LEFT_B: return &s_armLeftB;
-        case SERVO_ARM_LEFT_C: return &s_armLeftC;
-        case SERVO_ARM_LEFT_D: return &s_armLeftD;
-        case SERVO_ARM_LEFT_E: return &s_armLeftE;
-        case SERVO_ARM_RIGHT_A: return &s_armRightA;
-        case SERVO_ARM_RIGHT_B: return &s_armRightB;
-        case SERVO_ARM_RIGHT_C: return &s_armRightC;
-        case SERVO_ARM_RIGHT_D: return &s_armRightD;
-        case SERVO_ARM_RIGHT_E: return &s_armRightE;
-        case SERVO_RAKE_LEFT_TOP: return &s_rakeLeftTop;
-        case SERVO_RAKE_LEFT_BOTTOM: return &s_rakeLeftBottom;
-        case SERVO_RAKE_RIGHT_TOP: return &s_rakeRightTop;
+#if defined(RED_ROBOT)
+        case SERVO_ARM_LEFT_A:        return &s_armLeftA;
+        case SERVO_ARM_LEFT_B:        return &s_armLeftB;
+        case SERVO_ARM_LEFT_C:        return &s_armLeftC;
+        case SERVO_ARM_LEFT_D:        return &s_armLeftD;
+        case SERVO_ARM_LEFT_E:        return &s_armLeftE;
+        case SERVO_ARM_RIGHT_A:       return &s_armRightA;
+        case SERVO_ARM_RIGHT_B:       return &s_armRightB;
+        case SERVO_ARM_RIGHT_C:       return &s_armRightC;
+        case SERVO_ARM_RIGHT_D:       return &s_armRightD;
+        case SERVO_ARM_RIGHT_E:       return &s_armRightE;
+        case SERVO_RAKE_LEFT_TOP:     return &s_rakeLeftTop;
+        case SERVO_RAKE_LEFT_BOTTOM:  return &s_rakeLeftBottom;
+        case SERVO_RAKE_RIGHT_TOP:    return &s_rakeRightTop;
         case SERVO_RAKE_RIGHT_BOTTOM: return &s_rakeRightBottom;
-        case LEFT_SLIDER: return &s_leftSlider;
-        case RIGHT_SLIDER: return &s_rightSlider;
+        case LEFT_SLIDER:             return &s_leftSlider;
+        case RIGHT_SLIDER:            return &s_rightSlider;
+#elif defined(BLUE_ROBOT)
+        case SERVO_PUSH_ARM_LEFT:      return &s_pushArmLeft;
+        case SERVO_PUSH_ARM_RIGHT:     return &s_pushArmRight;
+        case SERVO_MEASURE_FORK:       return &s_measureFork;
+        case SERVO_PLIERS_INCLINATION: return &s_pliersInclination;
+        case SERVO_PLIERS:             return &s_pliers;
+#endif
     }
     return nullptr;
 }
 
 void Board::Actuators::elevatorSetHeigth(int16_t height) {
+    (void)height;
 //    s_elevator.goToDistance(height);
 }
 
