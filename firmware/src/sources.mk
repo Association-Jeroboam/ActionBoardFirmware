@@ -8,6 +8,7 @@ COMMONCPPSRC += $(SOURCEDIR)/Slider.cpp
 COMMONCPPSRC += $(SOURCEDIR)/Shell.cpp
 COMMONCPPSRC += $(SOURCEDIR)/PwmPliers.cpp
 COMMONCPPSRC += $(SOURCEDIR)/PneumaticsManager.cpp
+#COMMONCPPSRC += $(SOURCEDIR)/ResistanceMeasure.cpp
 
 COMMONINC += $(SOURCEDIR)
 

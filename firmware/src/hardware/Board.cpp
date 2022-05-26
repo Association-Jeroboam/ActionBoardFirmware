@@ -275,19 +275,23 @@ constexpr float RES3_MIN_VOLTAGE = 0.3;
 
 float Board::IO::getResistanceMeasure() {
     adcConvert(&RESISTANCE_MEAS_DRIVER, &resistanceMeasConvGroup, samples, sampleMaxCnt);
-
+    float resistance = 0;
     float voltage = (float)samples[0]* (1. / 4096.) * VDD_VOLTAGE;
 //    Logging::println("voltage %.4f", voltage);
     if(voltage < RES1_MAX_VOLTAGE && voltage > RES1_MIN_VOLTAGE) {
         Logging::println("4k7");
+        resistance = 4700;
     }
 
     if(voltage < RES2_MAX_VOLTAGE && voltage > RES2_MIN_VOLTAGE) {
         Logging::println("1k");
+        resistance = 1000;
     }
 
     if(voltage < RES3_MAX_VOLTAGE && voltage > RES3_MIN_VOLTAGE) {
         Logging::println("470R");
+        resistance = 470;
     }
-    return 0.;
+    Logging::println("voltage %f", voltage);
+    return resistance;
 }
