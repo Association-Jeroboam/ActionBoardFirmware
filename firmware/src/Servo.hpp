@@ -40,6 +40,8 @@ public:
     virtual void updateConfig() = 0;
     inline bool shouldUpdate() {return m_shouldUpdate;};
     inline bool shouldUpdateConfig() {return m_shouldUpdateConfig;};
+    inline void setUpdate() {m_shouldUpdate = true;};
+    inline void setUpdateConfig() {m_shouldUpdateConfig = true;};
 
 protected:
     uint8_t m_id;

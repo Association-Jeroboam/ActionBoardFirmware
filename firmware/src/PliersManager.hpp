@@ -5,7 +5,7 @@
 #include "DxlPliers.hpp"
 
 
-constexpr uint16_t PLIERS_MANAGER_WA = 0x100;
+constexpr uint16_t PLIERS_MANAGER_WA = 0x200;
 constexpr uint8_t  PLIERS_MANAGER_MAX_PLIERS_COUNT = 16;
 constexpr uint32_t PLIERS_MANAGER_CAN_UPDATE_PERIOD_MS = 100;
 constexpr uint32_t PLIERS_MANAGER_CAN_UPDATE_MSG_PERIOD_US = 500;
@@ -23,6 +23,7 @@ public:
 
     void processCanMsg(CanardRxTransfer * transfer);
     void sendStates();
+    void updateServos();
 private:
     PliersManager();
     chibios_rt::EventSource m_eventSource;

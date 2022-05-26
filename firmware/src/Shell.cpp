@@ -107,20 +107,30 @@ usage:
 
 static void cmd_servo(BaseSequentialStream* chp, int argc, char* argv[]) {
     (void)chp;
-    if (argc == 1) {
-        uint16_t angle = atoi(argv[0]);
+//#ifdef BLUE_ROBOT
+    if (argc == 2) {
+        enum servoID servoID = (enum servoID)atoi(argv[0]);
+        uint16_t angle = atoi(argv[1]);
         if(angle>180) {
             goto usage;
         }
-        Board::Actuators::setPwmServo(angle);
+        constexpr float degToRad = 2 * M_PI / 360;
+        Servo* servo = Board::Actuators::getServoByID(servoID);
+        if(servo) {
+            servo->setAngle(angle * degToRad);
+            PliersManager::instance()->updateServos();
+        } else {
+            goto usage;
+        }
+
     } else {
         goto usage;
     }
     return;
-
+//#endif
 usage:
-    Logging::println("usage:");
-    Logging::println("servo [0-180]");
+    Logging::println("usage: ON BLUE ROBOT");
+    Logging::println("servo [id] [0-300]");
 }
 
 static void cmd_reboot(BaseSequentialStream* chp, int argc, char* argv[]) {
