@@ -49,42 +49,6 @@ char* completion_buffer[SHELL_MAX_COMPLETIONS];
  * Shell commands
  */
 
-static void cmd_pliers(BaseSequentialStream* chp, int argc, char* argv[]) {
-    (void)chp;
-    (void)argc;
-    (void)argv;
-    Logging::println("usage:");
-    Logging::println("pliers [pliersID] [open/close]");
-}
-
-static void cmd_pliers_block(BaseSequentialStream* chp, int argc, char* argv[]) {
-    (void)chp;
-    (void)argc;
-    (void)argv;
-    Logging::println("usage:");
-    Logging::println("pliers_block [engage/disengage]");
-}
-
-static void cmd_slider(BaseSequentialStream* chp, int argc, char* argv[]) {
-    (void)chp;
-    if (argc == 2) {
-        int16_t distance = atoi(argv[1]);
-        if(!strcmp(argv[0], "elevator")) {
-            Board::Actuators::elevatorSetHeigth(distance);
-        } else if(!strcmp(argv[0], "translator")) {
-            Logging::println("Not supported yet");
-        } else {
-            goto usage;
-        }
-    } else {
-        goto usage;
-    }
-    return;
-
-usage:
-    Logging::println("usage:");
-    Logging::println("slider [elevator/translator] [distance (mm)]");
-}
 
 static void cmd_arm(BaseSequentialStream* chp, int argc, char* argv[]) {
     (void)chp;
@@ -92,6 +56,7 @@ static void cmd_arm(BaseSequentialStream* chp, int argc, char* argv[]) {
     (void)argv;
     Logging::println("usage:");
     Logging::println("arm [left/right] [state]");
+    Logging::println("NOT IMPLEMENTED.");
 }
 
 static void cmd_pump(BaseSequentialStream* chp, int argc, char* argv[]) {
@@ -168,9 +133,6 @@ static void cmd_reboot(BaseSequentialStream* chp, int argc, char* argv[]) {
 }
 
 static const ShellCommand commands[] = {
-    {"pliers", cmd_pliers},
-    {"pliers_block", cmd_pliers_block},
-    {"slider", cmd_slider},
     {"arm", cmd_arm},
     {"pump", cmd_pump},
     {"valve", cmd_valve},
