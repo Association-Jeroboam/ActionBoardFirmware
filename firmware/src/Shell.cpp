@@ -111,7 +111,7 @@ static void cmd_servo(BaseSequentialStream* chp, int argc, char* argv[]) {
     if (argc == 2) {
         enum servoID servoID = (enum servoID)atoi(argv[0]);
         uint16_t angle = atoi(argv[1]);
-        if(angle>180) {
+        if(angle>300) {
             goto usage;
         }
         constexpr float degToRad = 2 * M_PI / 360;

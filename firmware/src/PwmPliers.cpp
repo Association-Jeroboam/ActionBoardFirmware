@@ -10,6 +10,7 @@ PwmPliers::PwmPliers(uint8_t id, uint8_t channel, float idleAngle, float activeA
 
 void PwmPliers::init(){
     Logging::println("[PwmPliers] init chan %d", m_channel);
+    update();
 }
 
 void PwmPliers::activate(){

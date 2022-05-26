@@ -205,8 +205,12 @@ void PliersManager::processCanMsg(CanardRxTransfer * transfer){
             break;
     }
     if(broadcastFlags) {
-        m_eventSource.broadcastFlags(ServoUpdated);
+        updateServos();
     }
+}
+
+void PliersManager::updateServos() {
+    m_eventSource.broadcastFlags(ServoUpdated);
 }
 
 void PliersManager::processServoAngle(CanardRxTransfer* transfer){

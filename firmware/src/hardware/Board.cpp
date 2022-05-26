@@ -179,6 +179,23 @@ Servo*  Board::Actuators::getServoByID(enum servoID ID){
     return nullptr;
 }
 
+void Board::Actuators::init() {
+    palSetLineMode(PUMP_0_PIN, PUMP_0_PIN_MODE);
+    palSetLineMode(PUMP_1_PIN, PUMP_1_PIN_MODE);
+    palSetLineMode(VALVE_0_PIN, VALVE_0_PIN_MODE);
+    palSetLineMode(VALVE_1_PIN, VALVE_1_PIN_MODE);
+
+    palSetLineMode(SERVO_0_PIN, SERVO_0_PIN_MODE);
+
+    pwmStart(&PUMPS_DRIVER,   &pwmPumps);
+    pwmStart(&VALVES_DRIVER,  &pwmValves);
+    pwmStart(&SERVO_0_DRIVER, &pwmServo);
+    setPwmServo(PWM_PLIERS_INIT_ANGLE);
+#ifdef BLUE_ROBOT
+    s_pliers.init();
+#endif /* BLUE_ROBOT */
+}
+
 void Board::Actuators::elevatorSetHeigth(int16_t height) {
     (void)height;
 //    s_elevator.goToDistance(height);

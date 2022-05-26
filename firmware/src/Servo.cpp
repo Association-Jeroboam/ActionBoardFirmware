@@ -4,7 +4,7 @@
 Servo::Servo(uint8_t id):
 m_id(id),
 m_angle(),
-m_shouldUpdate(false),
-m_shouldUpdateConfig(false)
+m_shouldUpdate(true),
+m_shouldUpdateConfig(true)
 {}
 
