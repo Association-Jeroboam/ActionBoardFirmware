@@ -14,6 +14,7 @@ enum PlersManagerEventFlags {
     ServoUpdated  = 1 << 0,
     SliderUpdated = 1 << 1,
     SendStates    = 1 << 2,
+    EmergencyCleared = 1 << 3,
 };
 
 class PliersManager : public chibios_rt::BaseStaticThread<PLIERS_MANAGER_WA>,
@@ -38,11 +39,15 @@ private:
     void processSliderPosition(CanardRxTransfer* transfer);
     void processSliderConfig(CanardRxTransfer* transfer);
     void processPliersStatus(CanardRxTransfer* transfer);
+    void processEmergencyState(CanardRxTransfer* transfer);
+    void servoForceUpdate();
     bool servoProtocolIDToServoID(servoID* servoID, CanProtocolServoID protocolID);
     bool servoIDToservoProtocolID(CanProtocolServoID* protocolID, servoID servoID);
+
     Servo * m_servo[PLIERS_MANAGER_MAX_PLIERS_COUNT];
     uint8_t m_servoCount;
     uint8_t m_canupdateCount;
+    bool m_lastEmgcyState;
 
     chibios_rt::Timer m_sendStatesTimer;
     chibios_rt::Timer m_sendIndividualStateTimer;

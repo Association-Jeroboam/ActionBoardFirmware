@@ -10,6 +10,7 @@
 #include "SliderConfig_0_1.h"
 #include "PliersStatus_0_1.h"
 #include "ServoConfig.hpp"
+#include "EmergencyState_0_1.h"
 
 enum PliersManagerEvents {
     SelfEvent      = 1 << 0,
@@ -43,6 +44,7 @@ m_eventSource(),
 m_selflistener(),
 m_servoCount(0),
 m_canupdateCount(0),
+m_lastEmgcyState(false),
 m_sendStatesTimer(),
 m_sendIndividualStateTimer(){
 }
@@ -65,20 +67,34 @@ void PliersManager::main() {
 
     subscribeCanTopics();
 
-    checkServoUpdate();
+    servoForceUpdate();
 
     while (!shouldTerminate()){
         eventmask_t event = waitOneEvent(SelfEvent);
         if(event & SelfEvent) {
             eventflags_t flags = m_selflistener.getAndClearFlags();
-            if(flags & ServoUpdated) {
+            if(flags & ServoUpdated && !m_lastEmgcyState) {
                 checkServoUpdate();
             }
-            if (flags & SendStates ) {
+            if (flags & SendStates && !m_lastEmgcyState) {
                 if(doSendStates()) {
                     m_sendIndividualStateTimer.set(TIME_US2I(PLIERS_MANAGER_CAN_UPDATE_MSG_PERIOD_US), sendIndividualStateTimerCB, nullptr);
                 }
             }
+
+            if(flags & EmergencyCleared) {
+                servoForceUpdate();
+            }
+        }
+
+    }
+}
+
+void PliersManager::servoForceUpdate() {
+    for (uint8_t i = 0; i < m_servoCount; i++) {
+        if(m_servo[i]) {
+            m_servo[i]->updateConfig();
+            m_servo[i]->update();
         }
     }
 }
@@ -167,37 +183,53 @@ void PliersManager::subscribeCanTopics() {
                                 CanardTransferKindMessage,
                                 ACTION_SERVO_SET_PLIERS_ID,
                                 jeroboam_datatypes_actuators_servo_PliersStatus_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
+    Com::CANBus::registerCanMsg(this,
+                                CanardTransferKindMessage,
+                                EMERGENCY_STATE_ID,
+                                jeroboam_datatypes_actuators_common_EmergencyState_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
 }
 
 void PliersManager::processCanMsg(CanardRxTransfer * transfer){
     bool broadcastFlags = true;
     switch (transfer->metadata.port_id) {
         case ACTION_SERVO_SET_ANGLE_ID:{
+//            Logging::println("[PliersManager] process ACTION_SERVO_SET_ANGLE_ID");
             processServoAngle(transfer);
+            m_eventSource.broadcastFlags(ServoUpdated);
             break;
         }
         case ACTION_SERVO_SET_CONFIG_ID:{
             processServoConfig(transfer);
+            m_eventSource.broadcastFlags(ServoUpdated);
+//            Logging::println("[PliersManager] process ACTION_SERVO_SET_CONFIG");
             break;
         }
         case ACTION_SERVO_SET_COLOR_ID:{
-            Logging::println("[PliersManager] process ACTION_SERVO_SET_COLOR");
+//            Logging::println("[PliersManager] process ACTION_SERVO_SET_COLOR");
             processServoColor(transfer);
+            m_eventSource.broadcastFlags(ServoUpdated);
             break;
         }
         case ACTION_SLIDER_SET_POSITION_ID:{
-            Logging::println("[PliersManager] process ACTION_SLIDER_SET_POSITION");
+//            Logging::println("[PliersManager] process ACTION_SLIDER_SET_POSITION");
             processSliderPosition(transfer);
+            m_eventSource.broadcastFlags(ServoUpdated);
             break;
         }
         case ACTION_SLIDER_SET_CONFIG_ID:{
             Logging::println("[PliersManager] process ACTION_SLIDER_SET_CONFIG");
             processSliderConfig(transfer);
+            m_eventSource.broadcastFlags(ServoUpdated);
             break;
         }
         case ACTION_SERVO_SET_PLIERS_ID:{
             Logging::println("[PliersManager] process ACTION_SERVO_SET_PLIERS");
             processPliersStatus(transfer);
+            m_eventSource.broadcastFlags(ServoUpdated);
+        }
+        case EMERGENCY_STATE_ID :{
+            processEmergencyState(transfer);
+            break;
         }
         default:
             broadcastFlags = false;
@@ -222,6 +254,7 @@ void PliersManager::processServoAngle(CanardRxTransfer* transfer){
     if(servoProtocolIDToServoID(&servoID, (CanProtocolServoID)servoAngle.ID)){
         Servo *servo = Actuators::getServoByID(servoID);
         servo->setAngle(servoAngle.angle.radian);
+        Logging::println("ID %u: angle %f", servoID, servoAngle.angle.radian);
     }
 }
 
@@ -297,6 +330,24 @@ void PliersManager::processPliersStatus(CanardRxTransfer* transfer) {
         pliers->deactivate();
     }
 #endif
+}
+
+void PliersManager::processEmergencyState(CanardRxTransfer* transfer) {
+    jeroboam_datatypes_actuators_common_EmergencyState_0_1 emgcyState;
+
+    jeroboam_datatypes_actuators_common_EmergencyState_0_1_deserialize_(&emgcyState, (uint8_t*)transfer->payload, &transfer->payload_size);
+
+    if(emgcyState.emergency.value != m_lastEmgcyState) {
+        if(emgcyState.emergency.value) {
+            Logging::println("mgcy set");
+        } else {
+            m_eventSource.broadcastFlags(EmergencyCleared);
+            Logging::println("mgcy cleared");
+        }
+        m_lastEmgcyState = emgcyState.emergency.value;
+
+    }
+
 }
 
 bool PliersManager::servoProtocolIDToServoID(servoID* servoID, CanProtocolServoID protocolID) {

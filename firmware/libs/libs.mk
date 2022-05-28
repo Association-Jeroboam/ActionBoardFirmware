@@ -83,6 +83,7 @@ COMMONINC += $(CYPHALDIR)/includes/jeroboam_datatypes/sensors
 COMMONINC += $(CYPHALDIR)/includes/jeroboam_datatypes/actuators/servo
 COMMONINC += $(CYPHALDIR)/includes/jeroboam_datatypes/actuators/pneumatics
 COMMONINC += $(CYPHALDIR)/includes/jeroboam_datatypes/actuators/motion
+COMMONINC += $(CYPHALDIR)/includes/jeroboam_datatypes/actuators/common
 
 #$(shell nnvg --target-language c -v --target-endianness=little $(CYPHALREGULAR) --lookup-dir $(CYPHALLOOKUPDIRS) --outdir $(CYPHALDIR)/includes)
 #$(shell nnvg --target-language c -v --target-endianness=little $(CYPHALLOOKUPDIRS) --outdir $(CYPHALDIR)/includes)
