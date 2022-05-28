@@ -4,7 +4,9 @@
 #include "LocalMath.hpp"
 
 PwmPliers::PwmPliers(uint8_t id, uint8_t channel, float idleAngle, float activeAngle): Pliers(id, idleAngle, activeAngle),
-                                                                                       m_channel(channel){
+                                                                                       m_channel(channel)
+                                                                                       {
+    m_shouldUpdateConfig = false;
 
 }
 
