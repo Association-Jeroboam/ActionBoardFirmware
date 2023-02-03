@@ -46,6 +46,7 @@ private:
     void processPliersStatus(CanardRxTransfer* transfer);
     void processEmergencyState(CanardRxTransfer* transfer);
 	void processServoReboot(CanardRxTransfer* transfer);
+	void processServoGenericCommand(CanardRxTransfer* transfer);
     void servoForceUpdate();
     bool servoProtocolIDToServoID(servoID* servoID, CanProtocolServoID protocolID);
     bool servoIDToservoProtocolID(CanProtocolServoID* protocolID, servoID servoID);

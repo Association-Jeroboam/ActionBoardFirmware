@@ -12,6 +12,7 @@
 #include "ServoConfig.hpp"
 #include "EmergencyState_0_1.h"
 #include "ServoID_0_1.h"
+#include "GenericCommand_0_1.h"
 
 enum PliersManagerEvents {
     SelfEvent      = 1 << 0,
@@ -45,7 +46,7 @@ m_eventSource(),
 m_selflistener(),
 m_servoCount(0),
 m_canupdateCount(0),
-m_lastEmgcyState(false),
+m_lastEmgcyState(true),
 m_sendStatesTimer(),
 m_sendIndividualStateTimer(){
 	chFifoObjectInit(&pendingMessagesQueue, MSG_DATA_SIZE, MSG_QUEUE_LEN,  dataBuffer, msgBuffer);
@@ -85,7 +86,7 @@ void PliersManager::main() {
             }
 
             if(flags & EmergencyCleared) {
-                chThdSleepMilliseconds(500);
+                chThdSleepMilliseconds(800);
                 servoForceUpdate();
             }
 
@@ -203,6 +204,10 @@ void PliersManager::subscribeCanTopics() {
                                 CanardTransferKindMessage,
                                 ACTION_SERVO_REBOOT_ID,
                                 jeroboam_datatypes_actuators_servo_ServoID_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
+    Com::CANBus::registerCanMsg(this,
+                                CanardTransferKindMessage,
+                                ACTION_SERVO_GENERIC_ID,
+                                jeroboam_datatypes_actuators_servo_GenericCommand_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
 }
 
 void PliersManager::processCanMsg(CanardRxTransfer * transfer){
@@ -213,7 +218,8 @@ void PliersManager::processCanMsg(CanardRxTransfer * transfer){
         case ACTION_SLIDER_SET_POSITION_ID:
         case ACTION_SLIDER_SET_CONFIG_ID:
         case ACTION_SERVO_SET_PLIERS_ID:
-        case ACTION_SERVO_REBOOT_ID:{
+        case ACTION_SERVO_REBOOT_ID:
+        case ACTION_SERVO_GENERIC_ID:{
             Logging::println("process msg");
             CanardRxTransfer *newTransfer = (CanardRxTransfer *) chFifoTakeObjectTimeout(&pendingMessagesQueue, TIME_IMMEDIATE);
             if(newTransfer == NULL) {
@@ -278,6 +284,12 @@ void PliersManager::applyOrder(CanardRxTransfer * transfer) {
         case ACTION_SERVO_REBOOT_ID: {
             Logging::println("[PliersManager] process ACTION_SERVO_REBOOT_ID");
             processServoReboot(transfer);
+            break;
+        }
+        case ACTION_SERVO_GENERIC_ID:{
+            Logging::println("[PliersManager] process ACTION_SERVO_GENERIC_ID");
+            processServoGenericCommand(transfer);
+            break;
         }
         default:
             broadcastFlags = false;
@@ -436,6 +448,23 @@ void PliersManager::processServoReboot(CanardRxTransfer* transfer) {
         bus->reboot(rebootID.ID, 10);
         m_eventSource.broadcastFlags(EmergencyCleared);
     }
+}
+
+void PliersManager::processServoGenericCommand(CanardRxTransfer* transfer) {
+    jeroboam_datatypes_actuators_servo_GenericCommand_0_1 command;
+    jeroboam_datatypes_actuators_servo_GenericCommand_0_1_deserialize_(&command, (uint8_t*)transfer->payload, &transfer->payload_size);
+    Logging::print("ID: %u addr %u data ", command.id, command.addr);
+
+    for (int i = 0; i < command.data.count; ++i) {
+        Logging::print("%u ", command.data.elements[i]);
+    }
+    Logging::println("");
+    Dynamixel2Arduino * bus = Board::Com::DxlServo::getBus();
+    bool ret = bus->write(command.id, command.addr, command.data.elements, command.data.count);
+    if(!ret) {
+        Logging::println("failed!");
+    }
+
 }
 
 bool PliersManager::servoProtocolIDToServoID(servoID* servoID, CanProtocolServoID protocolID) {
