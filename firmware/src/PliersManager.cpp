@@ -47,6 +47,7 @@ m_canupdateCount(0),
 m_lastEmgcyState(false),
 m_sendStatesTimer(),
 m_sendIndividualStateTimer(){
+	chFifoObjectInit(&pendingMessagesQueue, MSG_DATA_SIZE, MSG_QUEUE_LEN,  dataBuffer, msgBuffer);
 }
 
 void PliersManager::main() {
@@ -83,7 +84,17 @@ void PliersManager::main() {
             }
 
             if(flags & EmergencyCleared) {
+                chThdSleepMilliseconds(500);
                 servoForceUpdate();
+            }
+
+            if(flags & OrderReceived) {
+                CanardRxTransfer * transfer;
+                while(chFifoReceiveObjectTimeout(&pendingMessagesQueue, (void **)&transfer, TIME_IMMEDIATE) == MSG_OK) {
+                    CanardRxTransfer transfer_copy = *transfer;
+                    chFifoReturnObject(&pendingMessagesQueue, transfer);
+                    applyOrder(&transfer_copy);
+                }
             }
         }
 
@@ -190,6 +201,37 @@ void PliersManager::subscribeCanTopics() {
 }
 
 void PliersManager::processCanMsg(CanardRxTransfer * transfer){
+    switch (transfer->metadata.port_id) {
+        case ACTION_SERVO_SET_ANGLE_ID:
+        case ACTION_SERVO_SET_CONFIG_ID:
+        case ACTION_SERVO_SET_COLOR_ID:
+        case ACTION_SLIDER_SET_POSITION_ID:
+        case ACTION_SLIDER_SET_CONFIG_ID:
+        case ACTION_SERVO_SET_PLIERS_ID:
+        case ACTION_SERVO_REBOOT_ID:{
+            Logging::println("process msg");
+            CanardRxTransfer *newTransfer = (CanardRxTransfer *) chFifoTakeObjectTimeout(&pendingMessagesQueue, TIME_IMMEDIATE);
+            if(newTransfer == NULL) {
+                Logging::println("[Pliers Manager] Queue full!");
+            } else {
+                *newTransfer = *transfer;
+                chFifoSendObject(&pendingMessagesQueue, newTransfer);
+                m_eventSource.broadcastFlags(OrderReceived);
+            }
+            break;
+        }
+        // Hack because Emergency state is broadcasted periodically fast and it kills the thread
+        case EMERGENCY_STATE_ID :{
+            processEmergencyState(transfer);
+            break;
+        }
+        default:
+            Logging::println("[PliersManager] Subsription not handled");
+            break;
+    }
+}
+
+void PliersManager::applyOrder(CanardRxTransfer * transfer) {
     bool broadcastFlags = true;
     switch (transfer->metadata.port_id) {
         case ACTION_SERVO_SET_ANGLE_ID:{
@@ -226,14 +268,10 @@ void PliersManager::processCanMsg(CanardRxTransfer * transfer){
             Logging::println("[PliersManager] process ACTION_SERVO_SET_PLIERS");
             processPliersStatus(transfer);
             m_eventSource.broadcastFlags(ServoUpdated);
-        }
-        case EMERGENCY_STATE_ID :{
-            processEmergencyState(transfer);
             break;
         }
         default:
             broadcastFlags = false;
-            Logging::println("[PliersManager] Subsription not handled");
             break;
     }
     if(broadcastFlags) {
