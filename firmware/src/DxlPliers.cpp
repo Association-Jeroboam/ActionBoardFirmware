@@ -51,10 +51,10 @@ void DxlPliers::updateConfig() {
     bus->ledOn(m_id, m_config.color);
     bus->torqueOn(m_id);
     Board::Com::DxlServo::unlockBus();
-
+    Logging::println("Update config servo %u", m_id );
     Logging::println("PositionPIDGain %u %u %u", m_config.p, m_config.i, m_config.d );
     Logging::println("TorqueLimit %f", m_config.torqueLimit );
-    Logging::println("GoalVelocity %f", m_config.movingSpeed );
+    Logging::println("GoalVelocity %f\n", m_config.movingSpeed );
     m_shouldUpdateConfig = false;
 }
 
@@ -74,11 +74,13 @@ void DxlPliers::setAngle(float angle) {
         float minAngle = fmin(m_idleAngle, m_activeAngle);
         if(angle > maxAngle){
             angle = maxAngle;
+            Logging::println("[DxlPliers %u] Angle out of range %f > %f", m_angle, maxAngle);
         }
         if(angle < minAngle){
             angle = minAngle;
+            Logging::println("[DxlPliers %u] Angle out of range %f <>> %f", m_angle, minAngle);
         }
-        Logging::println("[DxlPliers %u] Angle out of range %f > %f", m_angle, DXL_PLIERS_MAX_ANGLE_RAD);
+        Logging::println("[DxlPliers] set servo %u at angle %f", m_id, angle);
         m_angle = angle;
         m_shouldUpdate = true;
     }
