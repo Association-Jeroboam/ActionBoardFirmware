@@ -291,8 +291,15 @@ void PliersManager::processServoAngle(CanardRxTransfer* transfer){
     servoID servoID;
     if(servoProtocolIDToServoID(&servoID, (CanProtocolServoID)servoAngle.ID)){
         Servo *servo = Actuators::getServoByID(servoID);
-        servo->setAngle(servoAngle.angle.radian);
-        Logging::println("ID %u: angle %f", servoID, servoAngle.angle.radian);
+        if(servo){
+            servo->setAngle(servoAngle.angle.radian);
+        } else {
+            Logging::println("Servo not found!");
+        }
+    } else {
+        Board::Com::DxlServo::lockBus();
+        Board::Com::DxlServo::getBus()->setGoalPosition(servoAngle.ID, servoAngle.angle.radian * (360./ (2*M_PI)), UNIT_DEGREE);
+        Board::Com::DxlServo::unlockBus();
     }
 }
 
@@ -314,6 +321,22 @@ void PliersManager::processServoConfig(CanardRxTransfer* transfer){
     if(servoProtocolIDToServoID(&servoID, (CanProtocolServoID)servoConfig.ID)){
         Servo* servo = Actuators::getServoByID(servoID);
         servo->setConfig(config);
+    } else {
+        Dynamixel2Arduino * bus = Board::Com::DxlServo::getBus();
+        Board::Com::DxlServo::lockBus();
+        bus->torqueOff(servoConfig.ID);
+        bus->setPositionPIDGain(servoConfig.ID,
+                                servoConfig.pid.pid[0],
+                                servoConfig.pid.pid[1],
+                                servoConfig.pid.pid[2]);
+        bus->setTorqueLimit(servoConfig.ID, servoConfig._torque_limit, UNIT_RAW);
+        bus->setGoalVelocity(servoConfig.ID, servoConfig.moving_speed, UNIT_RAW); //TODO check unit conversion
+        bus->torqueOn(servoConfig.ID);
+        Board::Com::DxlServo::unlockBus();
+
+        Logging::println("PositionPIDGain %u %u %u", servoConfig.pid.pid[0], servoConfig.pid.pid[1], servoConfig.pid.pid[2] );
+        Logging::println("TorqueLimit %u", servoConfig._torque_limit );
+        Logging::println("GoalVelocity %u", servoConfig.moving_speed );
     }
 }
 
