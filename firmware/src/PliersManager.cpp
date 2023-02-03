@@ -11,6 +11,7 @@
 #include "PliersStatus_0_1.h"
 #include "ServoConfig.hpp"
 #include "EmergencyState_0_1.h"
+#include "ServoID_0_1.h"
 
 enum PliersManagerEvents {
     SelfEvent      = 1 << 0,
@@ -198,6 +199,10 @@ void PliersManager::subscribeCanTopics() {
                                 CanardTransferKindMessage,
                                 EMERGENCY_STATE_ID,
                                 jeroboam_datatypes_actuators_common_EmergencyState_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
+    Com::CANBus::registerCanMsg(this,
+                                CanardTransferKindMessage,
+                                ACTION_SERVO_REBOOT_ID,
+                                jeroboam_datatypes_actuators_servo_ServoID_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
 }
 
 void PliersManager::processCanMsg(CanardRxTransfer * transfer){
@@ -269,6 +274,10 @@ void PliersManager::applyOrder(CanardRxTransfer * transfer) {
             processPliersStatus(transfer);
             m_eventSource.broadcastFlags(ServoUpdated);
             break;
+        }
+        case ACTION_SERVO_REBOOT_ID: {
+            Logging::println("[PliersManager] process ACTION_SERVO_REBOOT_ID");
+            processServoReboot(transfer);
         }
         default:
             broadcastFlags = false;
@@ -409,6 +418,24 @@ void PliersManager::processEmergencyState(CanardRxTransfer* transfer) {
 
     }
 
+}
+void PliersManager::processServoReboot(CanardRxTransfer* transfer) {
+
+    jeroboam_datatypes_actuators_servo_ServoID_0_1 rebootID;
+    jeroboam_datatypes_actuators_servo_ServoID_0_1_deserialize_(&rebootID, (uint8_t*)transfer->payload, &transfer->payload_size);
+    servoID servoID;
+    Dynamixel2Arduino * bus = Board::Com::DxlServo::getBus();
+    if(servoProtocolIDToServoID(&servoID, (CanProtocolServoID)rebootID.ID)) {
+        Servo* servo = Actuators::getServoByID(servoID);
+        bus->reboot(servo->getID(), 10);
+        servo->setUpdateConfig();
+        servo->setUpdate();
+        chThdSleepMilliseconds(100);
+        m_eventSource.broadcastFlags(ServoUpdated);
+    } else {
+        bus->reboot(rebootID.ID, 10);
+        m_eventSource.broadcastFlags(EmergencyCleared);
+    }
 }
 
 bool PliersManager::servoProtocolIDToServoID(servoID* servoID, CanProtocolServoID protocolID) {

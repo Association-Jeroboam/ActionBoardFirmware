@@ -42,6 +42,7 @@ public:
     inline bool shouldUpdateConfig() {return m_shouldUpdateConfig;};
     inline void setUpdate() {m_shouldUpdate = true;};
     inline void setUpdateConfig() {m_shouldUpdateConfig = true;};
+    inline uint8_t getID() {return m_id;};
 
 protected:
     uint8_t m_id;
