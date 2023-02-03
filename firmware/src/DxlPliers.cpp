@@ -37,7 +37,7 @@ void DxlPliers::update() {
     Board::Com::DxlServo::lockBus();
     Board::Com::DxlServo::getBus()->setGoalPosition(m_id, m_angle * radToDeg, UNIT_DEGREE);
     Board::Com::DxlServo::unlockBus();
-    Logging::println("DXL set angle raw %f", m_angle * radToDeg);
+    Logging::println("DXL set angle deg %f", m_angle * radToDeg);
     m_shouldUpdate = false;
 }
 
@@ -74,13 +74,13 @@ void DxlPliers::setAngle(float angle) {
         float minAngle = fmin(m_idleAngle, m_activeAngle);
         if(angle > maxAngle){
             angle = maxAngle;
-            Logging::println("[DxlPliers %u] Angle out of range %f > %f", m_angle, maxAngle);
+            Logging::println("[DxlPliers %u] Angle out of range %f > %f",m_id, m_angle, maxAngle);
         }
         if(angle < minAngle){
             angle = minAngle;
-            Logging::println("[DxlPliers %u] Angle out of range %f <>> %f", m_angle, minAngle);
+            Logging::println("[DxlPliers %u] Angle out of range %f < %f",m_id, m_angle, minAngle);
         }
-        Logging::println("[DxlPliers] set servo %u at angle %f", m_id, angle);
+        Logging::println("[DxlPliers %u] Set angle %f", m_id, angle);
         m_angle = angle;
         m_shouldUpdate = true;
     }
