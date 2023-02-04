@@ -152,7 +152,7 @@ bool PliersManager::doSendStates() {
     if(servoIDToservoProtocolID(&protocolID, servo_id)) {
         metadata.transfer_id = transfer_id;
         servoAngle.ID = protocolID;
-        servoAngle.angle.radian = m_servo[0]->getAngle();
+        servoAngle.angle.radian = m_servo[m_canupdateCount]->getAngle();
 
         jeroboam_datatypes_actuators_servo_ServoAngle_0_1_serialize_(&servoAngle, buffer, &buf_size);
         Board::Com::CANBus::send(&metadata, buf_size,  buffer);

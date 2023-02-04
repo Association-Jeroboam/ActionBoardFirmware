@@ -27,6 +27,7 @@ enum servoID {
     SERVO_PLIERS_INCLINATION,
     SERVO_PLIERS,
 #endif
+    SERVO_LAST
 };
 
 class Servo {
@@ -35,7 +36,7 @@ public:
 
     virtual void setAngle(float angle) = 0;
     virtual void setConfig(ServoConfig config) = 0;
-    inline float getAngle() {return m_angle;};
+    virtual inline float getAngle() = 0;
     virtual void update() = 0;
     virtual void updateConfig() = 0;
     inline bool shouldUpdate() {return m_shouldUpdate;};

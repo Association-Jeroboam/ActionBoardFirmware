@@ -44,12 +44,13 @@ void DxlPliers::update() {
 void DxlPliers::updateConfig() {
     Dynamixel2Arduino * bus = Board::Com::DxlServo::getBus();
     Board::Com::DxlServo::lockBus();
+    bus->ledOn(m_id, LED_YELLOW);
     bus->torqueOff(m_id);
     bus->setPositionPIDGain(m_id, m_config.p, m_config.i, m_config.d);
     bus->setTorqueLimit(m_id, m_config.torqueLimit, UNIT_RAW);
     bus->setGoalVelocity(m_id, m_config.movingSpeed, UNIT_RAW); //TODO check unit conversion
-    bus->ledOn(m_id, m_config.color);
     bus->torqueOn(m_id);
+    bus->ledOn(m_id, m_config.color);
     Board::Com::DxlServo::unlockBus();
     Logging::println("Update config servo %u", m_id );
     Logging::println("PositionPIDGain %u %u %u", m_config.p, m_config.i, m_config.d );

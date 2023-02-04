@@ -13,6 +13,7 @@ public:
     void setAngle(float angle) override;
     void setConfig(ServoConfig config) override;
     void setPIDGains(uint16_t p, uint16_t i, uint16_t d);
+    float getAngle() {return m_angle;};
     void update() override;
     void updateConfig() override;
     //TODO: Calibration Method!
