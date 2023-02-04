@@ -13,6 +13,8 @@
 #include "EmergencyState_0_1.h"
 #include "ServoID_0_1.h"
 #include "GenericCommand_0_1.h"
+#include "GenericRead_0_1.h"
+#include "GenericReadResponse_0_1.h"
 
 enum PliersManagerEvents {
     SelfEvent      = 1 << 0,
@@ -171,43 +173,58 @@ void PliersManager::sendStates() {
 }
 
 void PliersManager::subscribeCanTopics() {
-    Com::CANBus::registerCanMsg(this,
+    bool res;
+
+    res = Com::CANBus::registerCanMsg(this,
                                 CanardTransferKindMessage,
                                 ACTION_SERVO_SET_ANGLE_ID,
                                 jeroboam_datatypes_actuators_servo_ServoAngle_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
-    Com::CANBus::registerCanMsg(this,
+    if(!res) { Logging::println("Error subscribing ACTION_SERVO_SET_ANGLE_ID");}
+    res = Com::CANBus::registerCanMsg(this,
                                 CanardTransferKindMessage,
                                 ACTION_SERVO_SET_CONFIG_ID,
                                 jeroboam_datatypes_actuators_servo_ServoConfig_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
+    if(!res) { Logging::println("Error subscribing ACTION_SERVO_SET_CONFIG_ID");}
     //TODO
 //    Com::CANBus::registerCanMsg(this,
 //                                CanardTransferKindMessage,
 //                                ACTION_SERVO_SET_COLOR_ID,
 //                                );
-    Com::CANBus::registerCanMsg(this,
+    res = Com::CANBus::registerCanMsg(this,
                                 CanardTransferKindMessage,
                                 ACTION_SLIDER_SET_POSITION_ID,
                                 jeroboam_datatypes_actuators_servo_SliderPosition_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
-    Com::CANBus::registerCanMsg(this,
+    if(!res) { Logging::println("Error subscribing ACTION_SLIDER_SET_POSITION_ID");}
+    res = Com::CANBus::registerCanMsg(this,
                                 CanardTransferKindMessage,
                                 ACTION_SLIDER_SET_CONFIG_ID,
                                 jeroboam_datatypes_actuators_servo_SliderConfig_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
-    Com::CANBus::registerCanMsg(this,
+    if(!res) { Logging::println("Error subscribing ACTION_SLIDER_SET_CONFIG_ID");}
+    res = Com::CANBus::registerCanMsg(this,
                                 CanardTransferKindMessage,
                                 ACTION_SERVO_SET_PLIERS_ID,
                                 jeroboam_datatypes_actuators_servo_PliersStatus_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
-    Com::CANBus::registerCanMsg(this,
+    if(!res) { Logging::println("Error subscribing ACTION_SERVO_SET_PLIERS_ID");}
+    res = Com::CANBus::registerCanMsg(this,
                                 CanardTransferKindMessage,
                                 EMERGENCY_STATE_ID,
                                 jeroboam_datatypes_actuators_common_EmergencyState_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
-    Com::CANBus::registerCanMsg(this,
+    if(!res) { Logging::println("Error subscribing ,");}
+    res = Com::CANBus::registerCanMsg(this,
                                 CanardTransferKindMessage,
                                 ACTION_SERVO_REBOOT_ID,
                                 jeroboam_datatypes_actuators_servo_ServoID_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
-    Com::CANBus::registerCanMsg(this,
+    if(!res) { Logging::println("Error subscribing ACTION_SERVO_REBOOT_ID");}
+    res = Com::CANBus::registerCanMsg(this,
                                 CanardTransferKindMessage,
-                                ACTION_SERVO_GENERIC_ID,
+                                ACTION_SERVO_GENERIC_COMMAND_ID,
                                 jeroboam_datatypes_actuators_servo_GenericCommand_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
+    if(!res) { Logging::println("Error subscribing ACTION_SERVO_GENERIC_COMMAND_ID");}
+    res = Com::CANBus::registerCanMsg(this,
+                                CanardTransferKindRequest,
+                                ACTION_SERVO_GENERIC_READ_ID,
+                                jeroboam_datatypes_actuators_servo_GenericRead_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
+    if(!res) { Logging::println("Error subscribing ACTION_SERVO_GENERIC_READ_ID");}
 }
 
 void PliersManager::processCanMsg(CanardRxTransfer * transfer){
@@ -219,7 +236,8 @@ void PliersManager::processCanMsg(CanardRxTransfer * transfer){
         case ACTION_SLIDER_SET_CONFIG_ID:
         case ACTION_SERVO_SET_PLIERS_ID:
         case ACTION_SERVO_REBOOT_ID:
-        case ACTION_SERVO_GENERIC_ID:{
+        case ACTION_SERVO_GENERIC_COMMAND_ID:
+        case ACTION_SERVO_GENERIC_READ_ID:{
             Logging::println("process msg");
             CanardRxTransfer *newTransfer = (CanardRxTransfer *) chFifoTakeObjectTimeout(&pendingMessagesQueue, TIME_IMMEDIATE);
             if(newTransfer == NULL) {
@@ -286,9 +304,14 @@ void PliersManager::applyOrder(CanardRxTransfer * transfer) {
             processServoReboot(transfer);
             break;
         }
-        case ACTION_SERVO_GENERIC_ID:{
-            Logging::println("[PliersManager] process ACTION_SERVO_GENERIC_ID");
+        case ACTION_SERVO_GENERIC_COMMAND_ID:{
+            Logging::println("[PliersManager] process ACTION_SERVO_GENERIC_COMMAND_ID");
             processServoGenericCommand(transfer);
+            break;
+        }
+        case ACTION_SERVO_GENERIC_READ_ID:{
+            Logging::println("[PliersManager] process ACTION_SERVO_GENERIC_READ_ID");
+            processServoGenericRead(transfer);
             break;
         }
         default:
@@ -455,7 +478,7 @@ void PliersManager::processServoGenericCommand(CanardRxTransfer* transfer) {
     jeroboam_datatypes_actuators_servo_GenericCommand_0_1_deserialize_(&command, (uint8_t*)transfer->payload, &transfer->payload_size);
     Logging::print("ID: %u addr %u data ", command.id, command.addr);
 
-    for (int i = 0; i < command.data.count; ++i) {
+    for (size_t i = 0; i < command.data.count; ++i) {
         Logging::print("%u ", command.data.elements[i]);
     }
     Logging::println("");
@@ -465,6 +488,50 @@ void PliersManager::processServoGenericCommand(CanardRxTransfer* transfer) {
         Logging::println("failed!");
     }
 
+}
+
+void PliersManager::processServoGenericRead(CanardRxTransfer* transfer) {
+    jeroboam_datatypes_actuators_servo_GenericRead_0_1 read;
+    jeroboam_datatypes_actuators_servo_GenericRead_0_1_deserialize_(&read, (uint8_t*)transfer->payload, &transfer->payload_size);
+    Logging::print("ID: %u addr %u len %u ", read.id, read.addr, read.len);
+
+    Dynamixel2Arduino * bus = Board::Com::DxlServo::getBus();
+    const uint16_t buf_len = 2*jeroboam_datatypes_actuators_servo_GenericReadResponse_0_1_data_ARRAY_CAPACITY_;
+    uint8_t buf[buf_len];
+    int32_t ret = bus->read(read.id, read.addr, read.len, buf, buf_len, 30);
+
+    jeroboam_datatypes_actuators_servo_GenericReadResponse_0_1 response;
+
+
+    if(ret == read.len) {
+        Logging::println("success!");
+        Logging::println("len %li", ret);
+        response._tag_ = CAN_PROTOCOL_RESPONSE_SUCCESS;
+        response.data.count = read.len;
+        for(uint16_t i = 0; i < read.len; i++) {
+            response.data.elements[i] = buf[2*i];
+            response.data.elements[i] = buf[2*i+1] << 8;
+        }
+
+    } else {
+        Logging::println("failed with code %li", bus->getLastLibErrCode());
+        Logging::println("len %li", ret);
+        response._tag_ = CAN_PROTOCOL_RESPONSE_ERROR;
+        response.err_code = ret;
+    }
+
+    size_t  response_size = jeroboam_datatypes_actuators_servo_GenericReadResponse_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_;
+    uint8_t response_buffer[jeroboam_datatypes_actuators_servo_GenericReadResponse_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_];
+
+    CanardTransferMetadata metadata = {
+        .priority = CanardPriorityNominal,
+        .transfer_kind = CanardTransferKindResponse,
+        .port_id = ACTION_SERVO_GENERIC_READ_ID,
+        .remote_node_id = CAN_PROTOCOL_EMBEDDED_COMPUTER_ID,
+        .transfer_id = transfer->metadata.transfer_id,
+    };
+    jeroboam_datatypes_actuators_servo_GenericReadResponse_0_1_serialize_(&response, response_buffer, &response_size);
+    Board::Com::CANBus::send(&metadata, response_size,  response_buffer);
 }
 
 bool PliersManager::servoProtocolIDToServoID(servoID* servoID, CanProtocolServoID protocolID) {

@@ -98,11 +98,11 @@ bool Board::Com::CANBus::send(const CanardTransferMetadata* const metadata,
     return canTxThread.send(metadata, payload_size, payload);
 }
 
-void Board::Com::CANBus::registerCanMsg(CanListener *listener,
+bool Board::Com::CANBus::registerCanMsg(CanListener *listener,
                                         CanardTransferKind transfer_kind,
                                         CanardPortID port_id,
                                         size_t extent) {
-    canRxThread.subscribe(listener, transfer_kind, port_id, extent);
+    return canRxThread.subscribe(listener, transfer_kind, port_id, extent);
 }
 
 void Board::Com::DxlServo::init(){

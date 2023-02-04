@@ -22,7 +22,7 @@ namespace Board {
             bool send(const CanardTransferMetadata* const metadata,
                       const size_t                        payload_size,
                       const void* const                   payload);
-            void registerCanMsg(CanListener *listener,
+            bool registerCanMsg(CanListener *listener,
                                 CanardTransferKind transfer_kind,
                                 CanardPortID port_id,
                                 size_t extent);
