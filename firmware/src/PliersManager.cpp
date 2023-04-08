@@ -26,7 +26,9 @@ PliersManager PliersManager::s_instance;
 
 static void sendStatesTimerCB(virtual_timer_t* timer, void* p) {
     (void)p;
-    chVTDoSetI(timer, TIME_MS2I(PLIERS_MANAGER_CAN_UPDATE_PERIOD_MS), sendStatesTimerCB, nullptr);
+    chSysLockFromISR();
+    chVTSetI(timer, TIME_MS2I(PLIERS_MANAGER_CAN_UPDATE_PERIOD_MS), sendStatesTimerCB, nullptr);
+    chSysUnlockFromISR();
     PliersManager::instance()->sendStates();
 
 }
@@ -169,7 +171,9 @@ bool PliersManager::doSendStates() {
 }
 
 void PliersManager::sendStates() {
-    m_eventSource.broadcastFlags(SendStates);
+    chSysLockFromISR();
+    m_eventSource.broadcastFlagsI(SendStates);
+    chSysUnlockFromISR();
 }
 
 void PliersManager::subscribeCanTopics() {
