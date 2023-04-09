@@ -6,9 +6,9 @@
 
 constexpr uint32_t PNEUMATICS_VALVE_ENABLED_TIMEOUT_MS = 500;
 
-class PneumaticsManager:public CanListener {
+class PeripheralManager:public CanListener {
 public:
-    PneumaticsManager();
+    PeripheralManager();
     void init();
     void processCanMsg(CanardRxTransfer * transfer);
 

@@ -1,4 +1,4 @@
-#include "PneumaticsManager.hpp"
+#include "PeripheralManager.hpp"
 #include "PumpStatus_0_1.h"
 #include "ValveStatus_0_1.h"
 #include "Logging.hpp"
@@ -7,7 +7,7 @@
 using namespace Board;
 
 
-PneumaticsManager::PneumaticsManager():
+PeripheralManager::PeripheralManager():
 CanListener(),
 m_leftValveTimer(),
 m_rightValveTimer()
@@ -26,7 +26,7 @@ static void rightPumpTimeoutCB(virtual_timer_t* timer, void * p) {
     Board::Actuators::setValveState(Actuators::VALVE_RIGHT, false);
 }
 
-void PneumaticsManager::init(){
+void PeripheralManager::init(){
     Com::CANBus::registerCanMsg(this,
                                 CanardTransferKindMessage,
                                 ACTION_PUMP_SET_STATUS_ID,
@@ -37,7 +37,7 @@ void PneumaticsManager::init(){
                                 jeroboam_datatypes_actuators_pneumatics_ValveStatus_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
 }
 
-void PneumaticsManager::processCanMsg(CanardRxTransfer * transfer) {
+void PeripheralManager::processCanMsg(CanardRxTransfer * transfer) {
     switch (transfer->metadata.port_id) {
         case ACTION_PUMP_SET_STATUS_ID:{
             processPumpStatus(transfer);
@@ -48,13 +48,13 @@ void PneumaticsManager::processCanMsg(CanardRxTransfer * transfer) {
             break;
         }
         default:
-            Logging::println("[PneumaticsManager] Subsription not handled");
+            Logging::println("[PeripheralManager] Subsription not handled");
             break;
     }
 
 }
 
-void PneumaticsManager::processPumpStatus(CanardRxTransfer* transfer){
+void PeripheralManager::processPumpStatus(CanardRxTransfer* transfer){
     jeroboam_datatypes_actuators_pneumatics_PumpStatus_0_1 pumpStatus;
     jeroboam_datatypes_actuators_pneumatics_PumpStatus_0_1_deserialize_(&pumpStatus,
                                                                         (uint8_t *)transfer->payload,
@@ -62,11 +62,11 @@ void PneumaticsManager::processPumpStatus(CanardRxTransfer* transfer){
 
     switch(pumpStatus.status.ID) {
         case CAN_PROTOCOL_PUMP_LEFT_ID:
-            Logging::println("[PneumaticsManager] Set pump %u : %u", CAN_PROTOCOL_PUMP_LEFT_ID, pumpStatus.status.enabled);
+            Logging::println("[PeripheralManager] Set pump %u : %u", CAN_PROTOCOL_PUMP_LEFT_ID, pumpStatus.status.enabled);
             Board::Actuators::setPumpState(Actuators::PUMP_LEFT, pumpStatus.status.enabled.value);
             break;
         case CAN_PROTOCOL_PUMP_RIGHT_ID:
-            Logging::println("[PneumaticsManager] Set pump %u : %u", CAN_PROTOCOL_PUMP_RIGHT_ID, pumpStatus.status.enabled);
+            Logging::println("[PeripheralManager] Set pump %u : %u", CAN_PROTOCOL_PUMP_RIGHT_ID, pumpStatus.status.enabled);
             Board::Actuators::setPumpState(Actuators::PUMP_RIGHT, pumpStatus.status.enabled.value);
             break;
         default:
@@ -76,7 +76,7 @@ void PneumaticsManager::processPumpStatus(CanardRxTransfer* transfer){
 
 }
 
-void PneumaticsManager::processValveStatus(CanardRxTransfer* transfer){
+void PeripheralManager::processValveStatus(CanardRxTransfer* transfer){
     jeroboam_datatypes_actuators_pneumatics_ValveStatus_0_1 valveStatus;
     jeroboam_datatypes_actuators_pneumatics_ValveStatus_0_1_deserialize_(&valveStatus,
                                                                          (uint8_t *)transfer->payload,
