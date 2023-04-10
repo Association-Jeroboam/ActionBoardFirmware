@@ -61,7 +61,6 @@ static DxlPliers s_measureFork(SERVO_MEASURE_FORK_ID,
 static DxlPliers s_pliersInclination(SERVO_PLIERS_INCLINATION_ID,
                                      SERVO_PLIERS_INCLINATION_IDLE_ANGLE,
                                      SERVO_PLIERS_INCLINATION_ACTIVE_ANGLE);
-static PwmPliers s_pliers(0, PWM_PLIERS_CHANNEL_NUMBER, SERVO_PLIERS_IDLE_ANGLE, SERVO_PLIERS_ACTIVE_ANGLE);
 #endif
 constexpr uint32_t DXL_BAUDRATE = 1000000;
 Dynamixel2Arduino * dxlBus;
@@ -173,26 +172,23 @@ Servo*  Board::Actuators::getServoByID(enum servoID ID){
         case SERVO_PUSH_ARM_RIGHT:     return &s_pushArmRight;
         case SERVO_MEASURE_FORK:       return &s_measureFork;
         case SERVO_PLIERS_INCLINATION: return &s_pliersInclination;
-        case SERVO_PLIERS:             return &s_pliers;
 #endif
     }
     return nullptr;
 }
 
 void Board::Actuators::init() {
+#if defined(RED_ROBOT)
     palSetLineMode(PUMP_0_PIN, PUMP_0_PIN_MODE);
     palSetLineMode(PUMP_1_PIN, PUMP_1_PIN_MODE);
     palSetLineMode(VALVE_0_PIN, VALVE_0_PIN_MODE);
     palSetLineMode(VALVE_1_PIN, VALVE_1_PIN_MODE);
-
-    palSetLineMode(SERVO_0_PIN, SERVO_0_PIN_MODE);
-
     pwmStart(&PUMPS_DRIVER,   &pwmPumps);
     pwmStart(&VALVES_DRIVER,  &pwmValves);
-    pwmStart(&SERVO_0_DRIVER, &pwmServo);
-    setPwmServo(PWM_PLIERS_INIT_ANGLE);
+#endif /* RED_ROBOT */
 #ifdef BLUE_ROBOT
-    s_pliers.init();
+    palSetLineMode(TURBINE_PIN, TURBINE_PIN_MODE);
+    pwmStart(&TURBINE_DRIVER, &pwmServo);
 #endif /* BLUE_ROBOT */
 }
 
@@ -271,6 +267,37 @@ void Board::IO::toggleLed2(){
 void Board::IO::toggleLed3(){
     palToggleLine(LED_3_LINE);
 }
+
+static enum Board::Actuators::TurbineSpeed currentSpeed = Board::Actuators::TURBINE_SPEED_STOPPED;
+
+void Board::Actuators::setTurbineSpeed(enum TurbineSpeed speed, bool fromISR) {
+    uint16_t period;
+    currentSpeed = speed;
+    switch (speed)
+    {
+    case TURBINE_SPEED_SLOW:
+        period = pwmServo.period * 0.2;
+        break;
+    case TURBINE_SPEED_FAST:
+        period = pwmServo.period * 0.7;
+        break;
+    case TURBINE_SPEED_STOPPED:
+        period = 0;
+        break;
+    }
+#ifdef BLUE_ROBOT
+    if(fromISR) {
+        pwmEnableChannelI(&TURBINE_DRIVER, 0, period);
+    } else {
+        pwmEnableChannel(&TURBINE_DRIVER, 0, period);
+    }
+#endif
+}
+
+enum Board::Actuators::TurbineSpeed Board::Actuators::getTurbineSpeed() {
+    return currentSpeed;
+}
+
 uint32_t mean_conv = 0;
 void adc_cb(ADCDriver *adcp) {
     mean_conv = 0;

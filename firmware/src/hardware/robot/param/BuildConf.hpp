@@ -103,21 +103,9 @@ __extension__ const PWMConfig pwmServo{
 
 
 // PWMs
-#define PUMPS_DRIVER   PWMD2
-#define VALVES_DRIVER  PWMD3
-#define SERVO_0_DRIVER PWMD4
 
-#define PUMP_0_PIN         PAL_LINE(GPIOA, 15U)
-#define PUMP_0_PIN_MODE    PAL_MODE_ALTERNATE(1)
-#define PUMP_1_PIN         PAL_LINE(GPIOB, 3U)
-#define PUMP_1_PIN_MODE    PAL_MODE_ALTERNATE(1)
-#define VALVE_0_PIN        PAL_LINE(GPIOB, 4U)
-#define VALVE_0_PIN_MODE   PAL_MODE_ALTERNATE(2)
-#define VALVE_1_PIN        PAL_LINE(GPIOB, 5U)
-#define VALVE_1_PIN_MODE   PAL_MODE_ALTERNATE(2)
 
-#define SERVO_0_PIN        PAL_LINE(GPIOB, 6U)
-#define SERVO_0_PIN_MODE   PAL_MODE_ALTERNATE(2)
+
 
 
 // Analog

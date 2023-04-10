@@ -46,6 +46,18 @@ constexpr uint8_t LEFT_SLIDER_ID = 101;
 constexpr uint8_t RIGHT_SLIDER_ID = 100;
 constexpr float   SLIDER_ELEVATOR_DISTANCE_PER_TURN = 15.3 * 2. * M_PI; //TODO: CHANGE ME!
 
+#define PUMPS_DRIVER   PWMD2
+#define VALVES_DRIVER  PWMD3
+
+#define PUMP_0_PIN         PAL_LINE(GPIOA, 15U)
+#define PUMP_0_PIN_MODE    PAL_MODE_ALTERNATE(1)
+#define PUMP_1_PIN         PAL_LINE(GPIOB, 3U)
+#define PUMP_1_PIN_MODE    PAL_MODE_ALTERNATE(1)
+#define VALVE_0_PIN        PAL_LINE(GPIOB, 4U)
+#define VALVE_0_PIN_MODE   PAL_MODE_ALTERNATE(2)
+#define VALVE_1_PIN        PAL_LINE(GPIOB, 5U)
+#define VALVE_1_PIN_MODE   PAL_MODE_ALTERNATE(2)
+
 #elif defined(BLUE_ROBOT)
 #pragma message ( "Compiling BLUE ROBOT" )
 constexpr uint8_t SERVO_PUSH_ARM_LEFT_ID  = 19;
@@ -62,11 +74,13 @@ constexpr float SERVO_MEASURE_FORK_ACTIVE_ANGLE  = 155 * DEGREES_TO_RAD;
 constexpr float SERVO_PLIERS_INCLINATION_IDLE_ANGLE  = 240 * DEGREES_TO_RAD;
 constexpr float SERVO_PLIERS_INCLINATION_ACTIVE_ANGLE  = 160 * DEGREES_TO_RAD;
 
-constexpr float SERVO_PLIERS_IDLE_ANGLE  = 15 * DEGREES_TO_RAD;
 constexpr float SERVO_PLIERS_ACTIVE_ANGLE  = 50 * DEGREES_TO_RAD;
 
 constexpr float   SLIDER_ELEVATOR_DISTANCE_PER_TURN = 15.3 * 2. * M_PI; //TODO: CHANGE ME!
-constexpr uint8_t PWM_PLIERS_CHANNEL_NUMBER = 0;
+
+#define TURBINE_DRIVER PWMD2
+#define TURBINE_PIN        PAL_LINE(GPIOA, 15U)
+#define TURBINE_PIN_MODE   PAL_MODE_ALTERNATE(1)
 
 #else
 #error "you must define a robot"

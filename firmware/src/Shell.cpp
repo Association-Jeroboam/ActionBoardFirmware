@@ -142,12 +142,35 @@ static void cmd_reboot(BaseSequentialStream* chp, int argc, char* argv[]) {
     }
 }
 
+static void cmd_turbine(BaseSequentialStream* chp, int argc, char* argv[]) {
+    using namespace Board::Actuators;
+    if (argc == 1) {
+        uint8_t speed = atoi(argv[0]);
+        enum TurbineSpeed turbineSpeed;
+        if(speed == 1) {
+            Logging::println("Slow");
+            turbineSpeed = TURBINE_SPEED_SLOW;
+        } else if(speed == 2) {
+            Logging::println("fast");
+            turbineSpeed = TURBINE_SPEED_FAST;
+        } else {
+            Logging::println("Stop");
+            turbineSpeed = TURBINE_SPEED_STOPPED;
+        }
+        setTurbineSpeed(turbineSpeed);
+        return;
+    }
+    Logging::println("usage:");
+    Logging::println("turbine [speed] (0-2)");
+}
+
 static const ShellCommand commands[] = {
     {"arm", cmd_arm},
     {"pump", cmd_pump},
     {"valve", cmd_valve},
     {"servo", cmd_servo},
     {"reboot", cmd_reboot},
+    {"turbine", cmd_turbine},
     {NULL, NULL},
 };
 /*

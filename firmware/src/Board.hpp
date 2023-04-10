@@ -56,14 +56,21 @@ namespace Board {
             VALVE_LEFT  = 0,
             VALVE_RIGHT = 1,
         };
+        enum TurbineSpeed {
+            TURBINE_SPEED_STOPPED,
+            TURBINE_SPEED_SLOW,
+            TURBINE_SPEED_FAST
+        };
         void init();
         Servo* getServoByID(enum servoID ID);
         void engagePliersBlock();
         void disengagePliersBlock();
         void activateArm(enum arm);
         void deactivateArm(enum arm);
-        void setPumpState(enum Pump, bool enabled);
-        void setValveState(enum Valve, bool opened);
+        void setPumpState(enum Pump, bool enabled, bool fromISR = false);
+        void setValveState(enum Valve, bool opened, bool fromISR = false);
+        void setTurbineSpeed(enum TurbineSpeed speed, bool fromISR = false);
+        enum TurbineSpeed getTurbineSpeed();
 
         void elevatorSetHeigth(int16_t height);
         void setPwmServo(uint16_t angle);
