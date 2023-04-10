@@ -213,7 +213,7 @@ void PliersManager::subscribeCanTopics() {
                                 CanardTransferKindMessage,
                                 EMERGENCY_STATE_ID,
                                 jeroboam_datatypes_actuators_common_EmergencyState_0_1_SERIALIZATION_BUFFER_SIZE_BYTES_);
-    if(!res) { Logging::println("Error subscribing ,");}
+    if(!res) { Logging::println("Error subscribing EMERGENCY_STATE_ID");}
     res = Com::CANBus::registerCanMsg(this,
                                 CanardTransferKindMessage,
                                 ACTION_SERVO_REBOOT_ID,
@@ -232,6 +232,7 @@ void PliersManager::subscribeCanTopics() {
 }
 
 void PliersManager::processCanMsg(CanardRxTransfer * transfer){
+    
     switch (transfer->metadata.port_id) {
         case ACTION_SERVO_SET_ANGLE_ID:
         case ACTION_SERVO_SET_CONFIG_ID:
@@ -242,7 +243,6 @@ void PliersManager::processCanMsg(CanardRxTransfer * transfer){
         case ACTION_SERVO_REBOOT_ID:
         case ACTION_SERVO_GENERIC_COMMAND_ID:
         case ACTION_SERVO_GENERIC_READ_ID:{
-            Logging::println("process msg");
             CanardRxTransfer *newTransfer = (CanardRxTransfer *) chFifoTakeObjectTimeout(&pendingMessagesQueue, TIME_IMMEDIATE);
             if(newTransfer == NULL) {
                 Logging::println("[Pliers Manager] Queue full!");

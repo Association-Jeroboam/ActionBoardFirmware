@@ -12,16 +12,12 @@
 #include "hal_pal.h"
 #include "Heartbeat_1_0.h"
 #include "Resistance_0_1.h"
-#include "PneumaticsManager.hpp"
+#include "PeripheralManager.hpp"
 #include "ResistanceMeasure.hpp"
 
 static THD_WORKING_AREA(waShellThread, SHELL_WA_SIZE);
-//#ifdef RED_ROBOT
-static PneumaticsManager pneumaticsManager;
-//#endif /* RED_ROBOT */
-//#ifdef BLUE_ROBOT
-//static ResistanceMeasure resistanceMeasure;
-//#endif /* BLUE_ROBOT */
+
+static PeripheralManager PeripheralManager;
 
 void cyphalHeartBeatRoutine() {
     static CanardTransferID transfer_id = 0;
@@ -96,12 +92,9 @@ int main() {
 
     chThdSleepMilliseconds(20);
     PliersManager::instance()->start(NORMALPRIO);
-#ifdef RED_ROBOT
-    pneumaticsManager.init();
-#endif /* RED_ROBOT */
-//#ifdef BLUE_ROBOT
-//    resistanceMeasure.start(NORMALPRIO);
-//#endif
+
+    PeripheralManager.init();
+
     chThdCreateStatic(waShellThread, sizeof(waShellThread), NORMALPRIO,
                       shellThread, (void*)&shell_cfg);
 
@@ -115,8 +108,6 @@ int main() {
             cyphalHeartBeatRoutine();
         }
 
-
-        publishResistanceMeasure(Board::IO::getResistanceMeasure());
         chThdSleepMilliseconds(100);
     }
     Logging::println("Shutting down");
