@@ -76,7 +76,7 @@ void Board::init() {
 void Board::Com::init() {
     Board::Com::CANBus::init();
 //    Board::Com::I2CBus::init();
-    Board::Com::DxlServo::init();
+    // Board::Com::DxlServo::init();
 }
 
 void Board::Com::CANBus::init(){
@@ -109,7 +109,7 @@ void Board::Com::DxlServo::init(){
     dxlBus = new Dynamixel2Arduino(&XL320_DRIVER);
     dxlBus->begin(DXL_BAUDRATE);
     dxlBus->setPortProtocolVersion(2.0);
-    #if defined(RED_ROBOT)
+#if defined(RED_ROBOT)
     s_armLeftA.init();
     s_armLeftB.init();
     s_armLeftC.init();
