@@ -91,7 +91,7 @@ int main() {
     Board::init();
 
     chThdSleepMilliseconds(20);
-    PliersManager::instance()->start(NORMALPRIO);
+    // PliersManager::instance()->start(NORMALPRIO);
 
     PeripheralManager.init();
 
@@ -104,7 +104,7 @@ int main() {
         count++;
         if(count % 10 == 0) {
             count = 0;
-            Board::IO::toggleNucleoLed();
+            // Board::IO::toggleNucleoLed();
             cyphalHeartBeatRoutine();
         }
 

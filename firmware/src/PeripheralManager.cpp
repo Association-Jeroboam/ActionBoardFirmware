@@ -142,25 +142,26 @@ void PeripheralManager::processTurbineStatus(CanardRxTransfer* transfer){
     chSysLock();
     bool timerIsArmed = m_turbineTimer.isArmedI();
     chSysUnlock();
+    Logging::print("[TURBINE] ");
     switch(command.speed) {
         case CAN_PROTOCOL_TURBINE_SPEED_STOPPED:
             setTurbineSpeed(TURBINE_SPEED_STOPPED);
-            Logging::println("STOP");
+            Logging::println("Stop");
             break;
         case CAN_PROTOCOL_TURBINE_SPEED_SLOW:
             if(m_emergencyState) break;
-            Logging::println("SLOW");
+            Logging::println("Slow");
             setTurbineSpeed(TURBINE_SPEED_SLOW);
             m_turbineTimer.set(TIME_MS2I(TURBINE_MAX_ENABLED_TIMEOUT_MS), turbineTimeoutCB, nullptr);
             break;
         case CAN_PROTOCOL_TURBINE_SPEED_FAST:
             if(m_emergencyState) break;
-            Logging::println("FAST");
+            Logging::println("Fast");
             setTurbineSpeed(TURBINE_SPEED_FAST);
             m_turbineTimer.set(TIME_MS2I(TURBINE_MAX_SPEED_TIMEOUT_MS), turbineTimeoutCB, nullptr);
             break;
         default:
-            Logging::println("Unknown Turbine Speed!");
+            Logging::println("Unknown Speed!");
             break;
     }
 }
